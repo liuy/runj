@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import argparse
+import subprocess
+import http.server
+import socketserver
+import socket
+
+class Ansi2HtmlConverter:
+    def __init__(self):
+        self.ansi_colors = {
+            30: 'color:black', 31: 'color:red', 32: 'color:green',
+            33: 'color:yellow', 34: 'color:blue', 35: 'color:magenta',
+            36: 'color:cyan', 37: 'color:white'
+        }
+        self.ansi_styles = {
+            1: 'font-weight:bold', 3: 'font-style:italic',
+            4: 'text-decoration:underline'
+        }
+        self.ansi_reset = '\033[0m'
+
+
+    def convert(self, text):
+        html = ''
+        style_stack = []
+        color_stack = []
+
+        # Minic the behavior of carriage return style progress bar from tqdm
+        lines = text.split('\n')
+        text = ''
+        for ln in lines:
+             text += ln.split('\r')[-1] + '\n' # only keep the last line after '\r'
+            
+        # print(text)
+        # Convert text to iterator
+        text_iter = iter(text)
+
+        for char in text_iter:
+            if char == '\033':
+                # ANSI escape sequence found
+                escape_seq = ''
+                while char != 'm':
+                    escape_seq += char
+                    char = next(text_iter)
+                escape_seq += 'm'
+                if escape_seq == '\033[0m':
+                    # Reset all styles and colors
+                    style_stack = []
+                    color_stack = []
+                    html += '</span>'
+                elif escape_seq.startswith('\033[') and escape_seq.endswith('m'):
+                    # Parse ANSI escape sequence
+                    codes = escape_seq[2:-1].split(';')
+                    for code in codes:
+                        if code.isdigit():
+                            code = int(code)
+                            if code in self.ansi_colors:
+                                # Set foreground color
+                                color_stack.append(self.ansi_colors[code])
+                            elif code == 39:
+                                # Reset foreground color
+                                if color_stack:
+                                    color_stack.pop()
+                            elif code in self.ansi_styles:
+                                # Set text style
+                                style_stack.append(self.ansi_styles[code])
+                            elif code == 22 or code == 23 or code == 24:
+                                # Reset text style
+                                if style_stack:
+                                    style_stack.pop()
+
+                # Build HTML markup
+                html += '</span>'
+                if color_stack:
+                    html += f'<span style="{color_stack[-1]}">'
+                if style_stack:
+                    html += f'<span style="{";".join(style_stack)}">'
+            else:
+                # Regular character
+                html += char
+
+        # Close any remaining HTML tags
+        while color_stack or style_stack:
+            html += '</span>'
+
+        return html
+
+class CustomHandler(http.server.SimpleHTTPRequestHandler):
+    connected_ips = {}
+
+    def log_message(self, format, *args):
+        pass
+
+    def do_GET(self):
+        # Log client IP address only once
+        if self.client_address[0] not in self.connected_ips:
+            print(f"Client connected: {self.client_address[0]}")
+            self.connected_ips[self.client_address[0]] = True
+        if self.path == '/':
+            # if newline = '', line endings are returned to the caller untranslated
+            with open('runb.log', 'r',  newline='', encoding="utf-8") as f:
+                log = f.read()
+                f.close()
+                converter = Ansi2HtmlConverter()
+                html_content = converter.convert(log)
+                response_content = f'''
+                    <html>
+                        <head>
+                            <meta http-equiv="refresh" content="1">
+                        </head>
+                        <body>
+                            <pre>{html_content}</pre>
+                        </body>
+                    </html>
+                '''.encode('utf-8')
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html; charset=utf-8')
+                self.send_header('Cache-Control', 'no-cache, must-revalidate')
+                self.send_header('Content-length', len(response_content))
+                self.end_headers()
+                self.wfile.write(response_content)
+            return
+        return http.server.SimpleHTTPRequestHandler.do_GET(self)
+
+class Runb:
+    def __init__(self, filename, ip='0.0.0.0', port=8090):
+        self.filename = filename
+        self.ip = ip
+        self.port = port
+
+    def run(self):
+        file_dir = os.path.dirname(self.filename)
+        file = os.path.basename(self.filename)
+        os.chdir(file_dir)
+
+        log_file = 'runb.log'
+        cmd = f'ipython {file} > {log_file} 2>&1 &'
+        cmd += f'echo $! > {log_file}.pid' # Save the PID of the notebook process
+        subprocess.run(cmd, shell=True)
+        handler = CustomHandler
+        socketserver.TCPServer.allow_reuse_address=True
+        httpd = socketserver.TCPServer((self.ip, self.port), handler)
+        host_ip = socket.gethostbyname(socket.gethostname())
+
+        print(f'Serving at {self.ip}:{self.port}')
+        print(f'View log file at http://{host_ip}:{self.port}')
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            # Handle Ctrl-C gracefully
+            print('\nShutting down server')
+            subprocess.run(f'kill -9 `cat {log_file}.pid`', shell=True)
+            os.remove(f'{log_file}.pid')
+            os.remove(log_file)
+            httpd.shutdown()
+
+if __name__ == '__main__':
+    d='Run a Jupyter notebook and serve the output for viewing in a browser'
+    e=f'Example: {sys.argv[0]} text.ipynb\n'
+    parser = argparse.ArgumentParser(prog=sys.argv[0], description=d, epilog=e)
+    parser.add_argument('filename', help='Name of the notebook file to run')
+    parser.add_argument('--ip', default='0.0.0.0', help='IP address to serve the output on (default: 0.0.0.0)')
+    parser.add_argument('--port', type=int, default=8090, help='Port to serve the output on (default: 8090)')
+    args = parser.parse_args()
+
+    runb = Runb(args.filename, args.ip, args.port)
+    runb.run()
