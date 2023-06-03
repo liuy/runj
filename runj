@@ -102,9 +102,9 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         if self.client_address[0] not in self.connected_ips:
             print(f"Client connected: {self.client_address[0]}")
             self.connected_ips[self.client_address[0]] = True
-        # Always serve the contents of runb.log
+        # Always serve the contents of runj.log
         # if newline = '', line endings are returned to the caller untranslated
-        with open('runb.log', 'r',  newline='', encoding="utf-8") as f:
+        with open('runj.log', 'r',  newline='', encoding="utf-8") as f:
             log = f.read()
             f.close()
             converter = Ansi2HtmlConverter()
@@ -127,7 +127,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(response_content)
         return
 
-class Runb:
+class Runj:
     def __init__(self, filename, ip='0.0.0.0', port=8090):
         self.filename = filename
         self.ip = ip
@@ -136,9 +136,10 @@ class Runb:
     def run(self):
         file_dir = os.path.dirname(self.filename)
         file = os.path.basename(self.filename)
-        os.chdir(file_dir)
+        if (file_dir):
+            os.chdir(file_dir)
 
-        log_file = 'runb.log'
+        log_file = 'runj.log'
         cmd = f'ipython {file} > {log_file} 2>&1 &'
         cmd += f'echo $! > {log_file}.pid' # Save the PID of the notebook process
         subprocess.run(cmd, shell=True)
@@ -168,5 +169,5 @@ if __name__ == '__main__':
     parser.add_argument('--port', type=int, default=8090, help='Port to serve the output on (default: 8090)')
     args = parser.parse_args()
 
-    runb = Runb(args.filename, args.ip, args.port)
-    runb.run()
+    runj = Runj(args.filename, args.ip, args.port)
+    runj.run()
