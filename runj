@@ -93,6 +93,7 @@ class Ansi2HtmlConverter:
 class CustomHandler(http.server.SimpleHTTPRequestHandler):
     connected_ips = {}
 
+    # mute log messages
     def log_message(self, format, *args):
         pass
 
@@ -101,31 +102,30 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         if self.client_address[0] not in self.connected_ips:
             print(f"Client connected: {self.client_address[0]}")
             self.connected_ips[self.client_address[0]] = True
-        if self.path == '/':
-            # if newline = '', line endings are returned to the caller untranslated
-            with open('runb.log', 'r',  newline='', encoding="utf-8") as f:
-                log = f.read()
-                f.close()
-                converter = Ansi2HtmlConverter()
-                html_content = converter.convert(log)
-                response_content = f'''
-                    <html>
-                        <head>
-                            <meta http-equiv="refresh" content="1">
-                        </head>
-                        <body>
-                            <pre>{html_content}</pre>
-                        </body>
-                    </html>
-                '''.encode('utf-8')
-                self.send_response(200)
-                self.send_header('Content-type', 'text/html; charset=utf-8')
-                self.send_header('Cache-Control', 'no-cache, must-revalidate')
-                self.send_header('Content-length', len(response_content))
-                self.end_headers()
-                self.wfile.write(response_content)
-            return
-        return http.server.SimpleHTTPRequestHandler.do_GET(self)
+        # Always serve the contents of runb.log
+        # if newline = '', line endings are returned to the caller untranslated
+        with open('runb.log', 'r',  newline='', encoding="utf-8") as f:
+            log = f.read()
+            f.close()
+            converter = Ansi2HtmlConverter()
+            html_content = converter.convert(log)
+            response_content = f'''
+                <html>
+                    <head>
+                        <meta http-equiv="refresh" content="1">
+                    </head>
+                    <body>
+                        <pre>{html_content}</pre>
+                    </body>
+                </html>
+            '''.encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.send_header('Cache-Control', 'no-cache, must-revalidate')
+            self.send_header('Content-length', len(response_content))
+            self.end_headers()
+            self.wfile.write(response_content)
+        return
 
 class Runb:
     def __init__(self, filename, ip='0.0.0.0', port=8090):
