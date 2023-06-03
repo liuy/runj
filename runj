@@ -10,6 +10,9 @@ import subprocess
 import http.server
 import socketserver
 import socket
+import string
+import random
+from functools import partial
 
 class Ansi2HtmlConverter:
     def __init__(self):
@@ -35,7 +38,7 @@ class Ansi2HtmlConverter:
         text = ''
         for ln in lines:
              text += ln.split('\r')[-1] + '\n' # only keep the last line after '\r'
-            
+
         # print(text)
         # Convert text to iterator
         text_iter = iter(text)
@@ -93,6 +96,10 @@ class Ansi2HtmlConverter:
 class CustomHandler(http.server.SimpleHTTPRequestHandler):
     connected_ips = {}
 
+    def __init__(self, *args, token=None, **kwargs):
+        self.token = token
+        super().__init__(*args, **kwargs)
+
     # mute log messages
     def log_message(self, format, *args):
         pass
@@ -102,17 +109,24 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         if self.client_address[0] not in self.connected_ips:
             print(f"Client connected: {self.client_address[0]}")
             self.connected_ips[self.client_address[0]] = True
+
+        #print(f"Client requested: {self.path}")
+        if self.token and self.token not in self.path:
+            self.send_error(401, 'Hey you are UNAUTHORIZED. Get out of here')
+            return
+
         # Always serve the contents of runj.log
         # if newline = '', line endings are returned to the caller untranslated
         with open('runj.log', 'r',  newline='', encoding="utf-8") as f:
             log = f.read()
-            f.close()
             converter = Ansi2HtmlConverter()
             html_content = converter.convert(log)
+            # stop favicon.ico request and refresh every 1 second
             response_content = f'''
                 <html>
                     <head>
                         <meta http-equiv="refresh" content="1">
+                        <link rel="icon" href="data:,">
                     </head>
                     <body>
                         <pre>{html_content}</pre>
@@ -128,10 +142,12 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         return
 
 class Runj:
-    def __init__(self, filename, ip='0.0.0.0', port=8090):
+    def __init__(self, filename, ip='0.0.0.0', port=8090, token=False):
         self.filename = filename
         self.ip = ip
         self.port = port
+        # Generate a random token in URL to prevent unauthorized access if token is True
+        self.token = ''.join(random.choices(string.ascii_letters + string.digits, k=8)) if token else None
 
     def run(self):
         file_dir = os.path.dirname(self.filename)
@@ -139,17 +155,20 @@ class Runj:
         if (file_dir):
             os.chdir(file_dir)
 
+
+
         log_file = 'runj.log'
         cmd = f'ipython {file} > {log_file} 2>&1 &'
         cmd += f'echo $! > {file}.pid' # Save the PID of the notebook process
         subprocess.run(cmd, shell=True)
-        handler = CustomHandler
+        handler = partial(CustomHandler, token=self.token)
         socketserver.TCPServer.allow_reuse_address=True
         httpd = socketserver.TCPServer((self.ip, self.port), handler)
         host_ip = socket.gethostbyname(socket.gethostname())
 
         print(f'Serving at {self.ip}:{self.port}')
-        print(f'View log file at http://{host_ip}:{self.port}')
+        URL = f'http://{host_ip}:{self.port}/' + (self.token if self.token else '')
+        print('View log file at ' + URL)
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
@@ -167,7 +186,9 @@ if __name__ == '__main__':
     parser.add_argument('filename', help='Name of the notebook file to run')
     parser.add_argument('--ip', default='0.0.0.0', help='IP address to serve the output on (default: 0.0.0.0)')
     parser.add_argument('--port', type=int, default=8090, help='Port to serve the output on (default: 8090)')
+    parser.add_argument('-t', '--token', action='store_true', help='Generate a token for a safe URL')
+
     args = parser.parse_args()
 
-    runj = Runj(args.filename, args.ip, args.port)
+    runj = Runj(args.filename, args.ip, args.port, args.token)
     runj.run()
