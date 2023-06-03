@@ -5,6 +5,9 @@
 `runj` is a Python script that runs a Jupyter notebook and serves the output as a web page for you.
 
 ### Snapshots
+- A standard setup in a server
+![Image text](https://github.com/liuy/runj/blob/master/.images/runj3.png?raw=true)
+
 - Update the log which contains [**tqdm**](https://github.com/tqdm/tqdm) progress bar
 ![Image text](https://github.com/liuy/runj/blob/master/.images/runj1.png?raw=true)
 
@@ -32,7 +35,7 @@ You don’t need to clone the repo, just download latest script from master bran
 
 ```bash
 $ wget https://github.com/liuy/runj/raw/master/runj
-$ chmod +x runj # e
+$ chmod +x runj # allow execution
 ```
 
 Then volia there you are!
@@ -43,7 +46,7 @@ To use `runj`, simply run the script with the path to your Jupyter notebook as 
 
 ```bash
 $ ./runj -h
-usage: ./runj [-h] [--ip IP] [--port PORT] filename
+usage: ./runj [-h] [--ip IP] [--port PORT] [-t] filename
 
 Run a Jupyter notebook and serve the output for viewing in a browser
 
@@ -54,6 +57,7 @@ options:
   -h, --help   show this help message and exit
   --ip IP      IP address to serve the output on (default: 0.0.0.0)
   --port PORT  Port to serve the output on (default: 8090)
+  -t, --token  Generate a token for a safe URL
 
 Example: ./runj text.ipynb
 ```
