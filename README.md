@@ -4,6 +4,13 @@
 
 `runj` is a Python script that runs a Jupyter notebook and serves the output as a web page for you.
 
+### Snapshots
+- Update the log which contains [**tqdm**](https://github.com/tqdm/tqdm) progress bar
+![Image text](https://github.com/liuy/runj/blob/master/.images/runj1.png?raw=true)
+
+- Show the error log that contains [**ANSI escape sequences**](https://en.wikipedia.org/wiki/ANSI_escape_code)
+![Image text](https://github.com/liuy/runj/blob/master/.images/runj2.png?raw=true)
+
 ## Why
 
 I was struggling to search for a lightweight and simple program that  
