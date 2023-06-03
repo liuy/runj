@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# Copyright (c) Liu Yuan <namei.unix@gmail.com>
+# Distributed under the terms of the 3-Clause BSD License.
+
 import os
 import sys
 import argparse
