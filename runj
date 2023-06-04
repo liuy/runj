@@ -163,7 +163,7 @@ class Runj:
 
         log_file = 'runj.log'
         cmd = f'ipython {file} > {log_file} 2>&1 &'
-        cmd += f'echo $! > {file}.pid' # Save the PID of the notebook process
+        cmd += f'echo $! > runj.pid' # Save the PID of the notebook process
         subprocess.run(cmd, shell=True)
         handler = partial(CustomHandler, token=self.token, notebook=file)
         socketserver.TCPServer.allow_reuse_address=True
@@ -178,8 +178,8 @@ class Runj:
         except KeyboardInterrupt:
             # Handle Ctrl-C gracefully
             print('\nShutting down server')
-            subprocess.run(f'kill -9 `cat {file}.pid`', shell=True)
-            os.remove(f'{file}.pid')
+            subprocess.run(f'kill -9 `cat runj.pid`', shell=True)
+            os.remove(f'runj.pid')
             os.remove(log_file)
             os.remove('runj.html')
             httpd.shutdown()
