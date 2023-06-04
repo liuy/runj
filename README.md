@@ -34,10 +34,9 @@ Supprisingly, there was NO such tools. So I ended up wrting it on my own through
 
 ## Setup
 
-You don’t need to clone the repo, just download latest script from master branch
-
 ```bash
-$ wget https://github.com/liuy/runj/raw/master/runj
+$ git clone https://github.com/liuy/runj.git
+$ cd runj
 $ chmod +x runj # allow execution
 ```
 
