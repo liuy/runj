@@ -13,6 +13,7 @@ import socket
 import string
 import random
 from functools import partial
+import nbconvert
 
 class Ansi2HtmlConverter:
     def __init__(self):
@@ -96,8 +97,9 @@ class Ansi2HtmlConverter:
 class CustomHandler(http.server.SimpleHTTPRequestHandler):
     connected_ips = {}
 
-    def __init__(self, *args, token=None, **kwargs):
+    def __init__(self, *args, token, notebook, **kwargs):
         self.token = token
+        self.notebook = notebook
         super().__init__(*args, **kwargs)
 
     # mute log messages
@@ -105,41 +107,43 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
     def do_GET(self):
+        def send_conent(content):
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.send_header('Cache-Control', 'no-cache, must-revalidate')
+            self.send_header('Content-length', len(content))
+            self.end_headers()
+            self.wfile.write(content)
+
         # Log client IP address only once
         if self.client_address[0] not in self.connected_ips:
             print(f"Client connected: {self.client_address[0]}")
             self.connected_ips[self.client_address[0]] = True
-
-        #print(f"Client requested: {self.path}")
+        # print(f"Client requested: {self.path}")
         if self.token and self.token not in self.path:
             self.send_error(401, 'Hey you are UNAUTHORIZED. Get out of here')
             return
-
-        # Always serve the contents of runj.log
-        # if newline = '', line endings are returned to the caller untranslated
-        with open('runj.log', 'r',  newline='', encoding="utf-8") as f:
-            log = f.read()
-            converter = Ansi2HtmlConverter()
-            html_content = converter.convert(log)
-            # stop favicon.ico request and refresh every 1 second
-            response_content = f'''
-                <html>
-                    <head>
-                        <meta http-equiv="refresh" content="1">
-                        <link rel="icon" href="data:,">
-                    </head>
-                    <body>
-                        <pre>{html_content}</pre>
-                    </body>
-                </html>
-            '''.encode('utf-8')
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html; charset=utf-8')
-            self.send_header('Cache-Control', 'no-cache, must-revalidate')
-            self.send_header('Content-length', len(response_content))
-            self.end_headers()
-            self.wfile.write(response_content)
-        return
+        if self.path == f"/{self.token}":
+            with open('runj.html', 'r') as f:
+                runj_html = f.read().encode('utf-8')
+                send_conent(runj_html)
+            return
+        elif self.path == f"/{self.token}/logs" if self.token else self.path == '/logs':
+            # if newline = '', line endings are returned to the caller untranslated
+            with open('runj.log', 'r',  newline='') as f:
+                log = f.read()
+                converter = Ansi2HtmlConverter()
+                log_html = ('<pre>' + converter.convert(log) + '</pre>').encode('utf-8')
+                send_conent(log_html)
+            return
+        elif self.path == f"/{self.token}/notebook" if self.token else self.path == '/notebook':
+            exporter = nbconvert.exporters.HTMLExporter()
+            notebook_html = exporter.from_filename(filename=self.notebook)[0].encode('utf-8')
+            send_conent(notebook_html)
+            return
+        else:
+            self.send_error(404, 'Not found')
+            return
 
 class Runj:
     def __init__(self, filename, ip='0.0.0.0', port=8090, token=False):
@@ -147,21 +151,21 @@ class Runj:
         self.ip = ip
         self.port = port
         # Generate a random token in URL to prevent unauthorized access if token is True
-        self.token = ''.join(random.choices(string.ascii_letters + string.digits, k=8)) if token else None
+        self.token = ''.join(random.choices(string.ascii_letters + string.digits, k=8)) if token else ''
 
     def run(self):
         file_dir = os.path.dirname(self.filename)
         file = os.path.basename(self.filename)
+        # copy runj.html to the same directory as the notebook
+        subprocess.run(f'cp {os.path.dirname(__file__)}/runj.html {file_dir}/runj.html', shell=True)
         if (file_dir):
             os.chdir(file_dir)
-
-
 
         log_file = 'runj.log'
         cmd = f'ipython {file} > {log_file} 2>&1 &'
         cmd += f'echo $! > {file}.pid' # Save the PID of the notebook process
         subprocess.run(cmd, shell=True)
-        handler = partial(CustomHandler, token=self.token)
+        handler = partial(CustomHandler, token=self.token, notebook=file)
         socketserver.TCPServer.allow_reuse_address=True
         httpd = socketserver.TCPServer((self.ip, self.port), handler)
         host_ip = socket.gethostbyname(socket.gethostname())
@@ -177,6 +181,7 @@ class Runj:
             subprocess.run(f'kill -9 `cat {file}.pid`', shell=True)
             os.remove(f'{file}.pid')
             os.remove(log_file)
+            os.remove('runj.html')
             httpd.shutdown()
 
 if __name__ == '__main__':

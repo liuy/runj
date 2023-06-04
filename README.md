@@ -8,11 +8,14 @@
 - A standard setup in a server
 ![Image text](https://github.com/liuy/runj/blob/master/.images/runj3.png?raw=true)
 
-- Update the log which contains [**tqdm**](https://github.com/tqdm/tqdm) progress bar
+- Update the log periodically which contains [**tqdm**](https://github.com/tqdm/tqdm) progress bar
 ![Image text](https://github.com/liuy/runj/blob/master/.images/runj1.png?raw=true)
 
-- Show the error log that contains [**ANSI escape sequences**](https://en.wikipedia.org/wiki/ANSI_escape_code)
-![Image text](https://github.com/liuy/runj/blob/master/.images/runj2.png?raw=true)
+- Show the error log that contains [**ANSI escape sequences**](https://en.wikipedia.org/wiki/ANSI_escape_code) on the phone
+![Image text](https://github.com/liuy/runj/blob/master/.images/runj2.jpg?raw=true)
+
+- Show notebook file content
+![Image text](https://github.com/liuy/runj/blob/master/.images/runj4.png?raw=true)
 
 ## Why
 
