@@ -155,6 +155,9 @@ class Runj:
         self.token = ''.join(random.choices(string.ascii_letters + string.digits, k=8)) if token else ''
 
     def run(self):
+        if not os.path.isfile(self.filename):
+            print(f'Notebook {self.filename} does not exist')
+            return
         file_dir = os.path.dirname(self.filename)
         file = os.path.basename(self.filename)
         if file_dir:
