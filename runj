@@ -128,8 +128,8 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             return
         if self.path == f"/{self.token}/notebook/stop" if self.token else self.path == '/notebook/stop':
             try:
-                #subprocess.run(f'kill -9 $(ps aux | grep {self.notebook} | grep ipython | grep -v grep | awk \'{{print $2}}\')', shell=True)
-                subprocess.run(f'kill -9 `cat runj.pid`', shell=True)
+                cmd = f'kill -9 $(ps aux | grep {self.notebook} | grep ipython | grep -v grep | awk \'{{print $2}}\')'
+                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 print(f"Notebook stopped: {self.notebook}")
                 self.send_response(OK)
                 self.end_headers()
@@ -141,7 +141,6 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         elif self.path == f"/{self.token}/notebook/run" if self.token else self.path == '/notebook/run':
             try:
                 cmd = f'ipython {self.notebook} > runj.log 2>&1 &'
-                cmd += f'echo $! > runj.pid' # Save the PID of the notebook process
                 subprocess.run(cmd, shell=True)
                 print(f"Notebook runing: {self.notebook}")
                 self.send_response(OK)
@@ -209,7 +208,6 @@ class Runj:
 
         log_file = 'runj.log'
         cmd = f'ipython {file} > {log_file} 2>&1 &'
-        cmd += f'echo $! > runj.pid' # Save the PID of the notebook process
         subprocess.run(cmd, shell=True)
         handler = partial(CustomHandler, token=self.token, notebook=file)
         socketserver.TCPServer.allow_reuse_address=True
@@ -228,8 +226,8 @@ class Runj:
         except KeyboardInterrupt:
             # Handle Ctrl-C gracefully
             print('\nShutting down server')
-            subprocess.run(f'kill -9 `cat runj.pid`', shell=True)
-            os.remove(f'runj.pid')
+            cmd = f'kill -9 $(ps aux | grep {file} | grep ipython | grep -v grep | awk \'{{print $2}}\')'
+            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             os.remove(log_file)
             if not os.path.exists('./runj'):
                 os.remove('runj.html')
