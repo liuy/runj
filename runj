@@ -122,6 +122,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         # print(f"Client requested: {self.path}")
         if self.token and self.token not in self.path:
             self.send_error(401, 'Hey you are UNAUTHORIZED. Get out of here')
+            print(f"Unauthorized access denied: {self.client_address[0]}")
             return
         if self.path == f"/{self.token}":
             with open('runj.html', 'r') as f:
