@@ -157,9 +157,9 @@ class Runj:
     def run(self):
         file_dir = os.path.dirname(self.filename)
         file = os.path.basename(self.filename)
-        # copy runj.html to the same directory as the notebook
-        subprocess.run(f'cp {os.path.dirname(__file__)}/runj.html {file_dir}/runj.html', shell=True)
-        if (file_dir):
+        if file_dir:
+            # copy runj.html to the same directory as the notebook
+            subprocess.run(f'cp {os.path.dirname(__file__)}/runj.html {file_dir}/runj.html', shell=True)
             os.chdir(file_dir)
 
         log_file = 'runj.log'
@@ -182,7 +182,8 @@ class Runj:
             subprocess.run(f'kill -9 `cat runj.pid`', shell=True)
             os.remove(f'runj.pid')
             os.remove(log_file)
-            os.remove('runj.html')
+            if not os.path.exists('./runj'):
+                os.remove('runj.html')
             httpd.shutdown()
 
 if __name__ == '__main__':
