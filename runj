@@ -94,6 +94,11 @@ class Ansi2HtmlConverter:
 
         return html
 
+OK = 200
+UNAUTHORIZED = 401
+NOT_FOUND = 404
+INTERNAL_SERVER_ERROR = 500
+NOT_IMPLEMENTED = 501
 class CustomHandler(http.server.SimpleHTTPRequestHandler):
     connected_ips = {}
 
@@ -106,23 +111,60 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
-    def do_GET(self):
-        def send_conent(content):
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html; charset=utf-8')
-            self.send_header('Cache-Control', 'no-cache, must-revalidate')
-            self.send_header('Content-length', len(content))
-            self.end_headers()
-            self.wfile.write(content)
-
+    def sanity_check(self):
         # Log client IP address only once
         if self.client_address[0] not in self.connected_ips:
             print(f"Client connected: {self.client_address[0]}")
             self.connected_ips[self.client_address[0]] = True
         # print(f"Client requested: {self.path}")
         if self.token and self.token not in self.path:
-            self.send_error(401, 'Hey you are UNAUTHORIZED. Get out of here')
+            self.send_error(UNAUTHORIZED, 'Hey you are UNAUTHORIZED. Get out of here')
             print(f"Unauthorized access denied: {self.client_address[0]}")
+            return False
+        return True
+
+    def do_POST(self):
+        if self.sanity_check() is False:
+            return
+        if self.path == f"/{self.token}/notebook/stop" if self.token else self.path == '/notebook/stop':
+            try:
+                #subprocess.run(f'kill -9 $(ps aux | grep {self.notebook} | grep ipython | grep -v grep | awk \'{{print $2}}\')', shell=True)
+                subprocess.run(f'kill -9 `cat runj.pid`', shell=True)
+                print(f"Notebook stopped: {self.notebook}")
+                self.send_response(OK)
+                self.end_headers()
+                return
+            except Exception as e:
+                print(f"Failed to stop notebook: {self.notebook}, exception: {e} ")
+                self.send_error(INTERNAL_SERVER_ERROR, 'Internal server error')
+                return
+        elif self.path == f"/{self.token}/notebook/run" if self.token else self.path == '/notebook/run':
+            try:
+                cmd = f'ipython {self.notebook} > runj.log 2>&1 &'
+                cmd += f'echo $! > runj.pid' # Save the PID of the notebook process
+                subprocess.run(cmd, shell=True)
+                print(f"Notebook runing: {self.notebook}")
+                self.send_response(OK)
+                self.end_headers()
+                return
+            except Exception as e:
+                print(f"Failed to start notebook: {self.notebook}, exception: {e} ")
+                self.send_error(INTERNAL_SERVER_ERROR, 'Internal server error')
+                return
+        else:
+            self.send_error(NOT_IMPLEMENTED, 'Not implemented')
+            return
+
+    def do_GET(self):
+        def send_conent(content):
+            self.send_response(OK)
+            self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.send_header('Cache-Control', 'no-cache, must-revalidate')
+            self.send_header('Content-length', len(content))
+            self.end_headers()
+            self.wfile.write(content)
+
+        if self.sanity_check() is False:
             return
         if self.path == f"/{self.token}":
             with open('runj.html', 'r') as f:
@@ -143,7 +185,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             send_conent(notebook_html)
             return
         else:
-            self.send_error(404, 'Not found')
+            self.send_error(NOT_FOUND, 'Not found')
             return
 
 class Runj:

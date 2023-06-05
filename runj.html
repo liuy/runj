@@ -16,6 +16,8 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
 <div class="w3-bar w3-top w3-black w3-large" style="z-index:4">
   <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
   <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj>RunJ</a></span>
+  <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook_stop()"><i class="fa fa-stop"></i>  Stop</button>
+  <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook_run()"><i class="fa fa-play"></i>  Run</button>
 </div>
 
 <!-- Sidebar/menu -->
@@ -79,6 +81,7 @@ function w3_close() {
   overlayBg.style.display = "none";
 }
 
+
 const runjhost = window.location.href.replace('#', '');
 const notebookLink = document.querySelector('#notebook-link');
 const notebookContent = document.querySelector('#notebook-content');
@@ -86,17 +89,15 @@ const notebook = document.getElementById('notebook-content-body');
 notebookLink.addEventListener('click', () => {
   notebookContent.style.display = '';
   notebookLink.classList.add('w3-blue');
-  if (notebookContent.style.display === '') {
-    fetch(runjhost + '/notebook') // update when being clicked every time
-    .then(response => response.text())
-    .then(data => {
-      console.log('Notebook content:', data);
-      notebook.innerHTML = data;
-    })
-    .catch(error => {
-      console.error('Error fetching notebook content:', error);
-    });
-  }
+  fetch(runjhost + '/notebook') // update when being clicked every time
+  .then(response => response.text())
+  .then(data => {
+    console.log('Notebook content:', data);
+    notebook.innerHTML = data;
+  })
+  .catch(error => {
+    console.error('Error fetching notebook content:', error);
+  });
   // Hide logsContent if it is currently displayed
   logsContent.style.display = 'none';
   logsLink.classList.remove('w3-blue');
@@ -128,6 +129,40 @@ function updateDivContent() {
 
 // Call the function every 1 second
 setInterval(updateDivContent, 1000);
+
+const notebookStop = document.querySelector('#notebook-stop');
+const notebookRun = document.querySelector('#notebook-run');
+function notebook_run() {
+  fetch(runjhost + '/notebook/run', {method: 'POST'})
+    .then(response => {
+      if (response.ok) {
+        notebookRun.style.display = 'none';
+        notebookStop.style.display = 'block';
+        console.log('Request succeeded!');
+      } else {
+        console.error('Request failed!');
+      }
+    })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+}
+
+function notebook_stop() {
+  fetch(runjhost + '/notebook/stop', {method: 'POST'})
+    .then(response => {
+      if (response.ok) {
+        notebookStop.style.display = 'none';
+        notebookRun.style.display = 'block';
+        console.log('Request succeeded!');
+      } else {
+        console.error('Request failed!');
+      }
+    })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+}
 
 </script>
 
