@@ -18,6 +18,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
   <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj>RunJ</a></span>
   <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()"><i class="fa fa-stop"></i>  Stop</button>
   <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook.run()"><i class="fa fa-play"></i>  Run</button>
+  <span id="notebook-name" style="display: none" class="w3-bar-item w3-left"></span>
   <span id="notebook-timer" style="display: none" class="w3-bar-item w3-left"></span>
 </div>
 
@@ -88,9 +89,8 @@ const notebook = {
   body: document.getElementById('notebook-content-body'),
   run_button: document.getElementById('notebook-run'),
   stop_button: document.getElementById('notebook-stop'),
-  start_time: 0,
-  status: 'stopped',
   timer: document.getElementById('notebook-timer'),
+  name: document.getElementById('notebook-name'),
   run: () => {
     fetch(runjhost + '/notebook/run', {method: 'POST'})
     .then(response => {
@@ -149,10 +149,10 @@ logsLink.addEventListener('click', () => {
   notebook.link.classList.remove('w3-blue');
 });
 
-function updateNotebookTimer() {
-  if (notebook.status === 'running') {
+function updateNotebook(nb) {
+  if (nb.status === 'running') {
     const now = new Date();
-    const elapsed = Math.floor((now - notebook.start_time) / 1000);
+    const elapsed = Math.floor((now - nb.start_time) / 1000);
     const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
     const minutes = Math.floor((elapsed - hours * 3600) / 60).toString().padStart(2, '0');
     const seconds = (elapsed - hours * 3600 - minutes * 60).toString().padStart(2, '0');
@@ -161,6 +161,8 @@ function updateNotebookTimer() {
   } else {
     notebook.timer.style.display = 'none';
   }
+  notebook.name.innerHTML = nb.name;
+  notebook.name.style.display = 'block'
 }
 // Define the function to update the div's content
 const logs = document.getElementById('logs-content-body');
@@ -168,10 +170,13 @@ function updateDivContent() {
     fetch(runjhost + '/logs')
     .then(response => response.json())
     .then(data => {
-      notebook.status = data.nb_status;
-      notebook.start_time = data.nb_start_time;
+      nb = {
+        name: data.nb_name,
+        status: data.nb_status,
+        start_time: data.nb_start_time,
+      }
       logs.innerHTML = data.lg_content;
-      updateNotebookTimer();
+      updateNotebook(nb);
     })
     .catch(error => {
       console.error('Error fetching log content:', error);

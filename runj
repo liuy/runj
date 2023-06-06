@@ -173,7 +173,9 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         def send_conent(content):
             self.send_response(OK)
             self.send_header('Content-type', 'text/html; charset=utf-8')
-            self.send_header('Cache-Control', 'no-cache, must-revalidate')
+            self.send_header('x-content-type-options', 'nosniff')
+            self.send_header('Server', 'RunJ')
+            self.send_header('Cache-Control', 'no-cache')
             self.send_header('Content-length', len(content))
             self.end_headers()
             self.wfile.write(content)
@@ -192,6 +194,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 converter = Ansi2HtmlConverter()
                 log_html = ('<pre>' + converter.convert(log) + '</pre>')
                 data = {
+                    'nb_name': self.notebook,
                     'nb_status': nb_status,
                     'nb_start_time': nb_start_time,
                     'lg_content': log_html
