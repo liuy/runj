@@ -13,7 +13,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
 <body class="w3-light-grey">
 
 <!-- Top container -->
-<div class="w3-bar w3-top w3-black w3-large" style="z-index:4">
+<div class="w3-bar w3-top w3-black" style="z-index:4">
   <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
   <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj>RunJ</a></span>
   <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()"><i class="fa fa-stop"></i>  Stop</button>
@@ -43,7 +43,8 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
   <div id="notebook-content" style="display:none;">
     <!-- Notebook content goes here -->
     <header class="w3-container" style="padding-top:22px">
-    <h5><b><i class="fa fa-book"></i> My Notebook</b></h5>
+    <h5 class="w3-left"><b><i class="fa fa-book"></i> My Notebook</b></h5>
+    <button id="notebook-save" class="w3-bar-item w3-button w3-right" onclick="notebook.save()"><i class="fa fa-save"></i><b>  Save</b></button>
     </header>
     <div id="notebook-content-body" class="w3-container">
     </div>
