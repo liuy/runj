@@ -18,8 +18,8 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
   <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj>RunJ</a></span>
   <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()"><i class="fa fa-stop"></i>  Stop</button>
   <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook.run()"><i class="fa fa-play"></i>  Run</button>
-  <span id="notebook-name" style="display: none" class="w3-bar-item w3-left"></span>
-  <span id="notebook-timer" style="display: none" class="w3-bar-item w3-left"></span>
+  <span id="notebook-name" style="display: block" class="w3-bar-item w3-left"></span>
+  <span id="notebook-timer" style="display: block" class="w3-bar-item w3-left"></span>
 </div>
 
 <!-- Sidebar/menu -->
@@ -158,12 +158,12 @@ function updateNotebook(nb) {
     const minutes = Math.floor((elapsed - hours * 3600) / 60).toString().padStart(2, '0');
     const seconds = (elapsed - hours * 3600 - minutes * 60).toString().padStart(2, '0');
     notebook.timer.innerHTML = `Running ${hours}:${minutes}:${seconds}`;
-    notebook.timer.style.display = 'block';
   } else {
-    notebook.timer.style.display = 'none';
+    notebook.timer.innerHTML = notebook.timer.innerHTML.replace('Running', 'Stopped in');
+    notebook.stop_button.style.display = 'none';
+    notebook.run_button.style.display = 'block';
   }
   notebook.name.innerHTML = nb.name;
-  notebook.name.style.display = 'block'
 }
 // Define the function to update the div's content
 const logs = document.getElementById('logs-content-body');

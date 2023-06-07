@@ -137,8 +137,8 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             return
         if self.path == f"/{self.token}/notebook/stop" if self.token else self.path == '/notebook/stop':
             try:
-                cmd = f'kill -9 $(ps aux | grep {self.notebook} | grep ipython | grep -v grep | awk \'{{print $2}}\')'
-                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True).returncode
+                cmd = f"kill -9 $(ps aux | grep 'ipython {self.notebook}' | grep -v grep | awk \'{{print $2}}\')"
+                subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 nb_status = 'stopped'
                 print(f"Notebook stopped: {self.notebook}")
                 self.send_response(OK)
@@ -193,6 +193,12 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 log = f.read()
                 converter = Ansi2HtmlConverter()
                 log_html = ('<pre>' + converter.convert(log) + '</pre>')
+                cmd = f"ps aux | grep 'ipython {self.notebook}' | grep -v grep"
+                p = subprocess.run(cmd, capture_output=True, shell=True)
+                if p.stdout != b'':
+                    nb_status = 'running'
+                else:
+                    nb_status = 'stopped'
                 data = {
                     'nb_name': self.notebook,
                     'nb_status': nb_status,
@@ -254,7 +260,7 @@ class Runj:
         except KeyboardInterrupt:
             # Handle Ctrl-C gracefully
             print('\nShutting down server')
-            cmd = f'kill -9 $(ps aux | grep {file} | grep ipython | grep -v grep | awk \'{{print $2}}\')'
+            cmd = f"kill -9 $(ps aux | grep 'ipython {file}' | grep -v grep | awk \'{{print $2}}\')"
             subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             os.remove(log_file)
             httpd.shutdown()
