@@ -16,6 +16,7 @@ from functools import partial
 import nbconvert
 import time
 import json
+from bs4 import BeautifulSoup
 
 class Ansi2HtmlConverter:
     def __init__(self):
@@ -113,6 +114,30 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         self.notebook = notebook
         super().__init__(*args, **kwargs)
 
+    # TODO add support for other notebook versions
+    def _html2ipynb(self, html):
+        soup = BeautifulSoup(html, 'html.parser')
+        ipynb = {'nbformat': 4, 'nbformat_minor': 4, 'cells': [], 'metadata': {}}
+        for d in soup.findAll("div"):
+            if 'class' in d.attrs.keys():
+                for clas in d.attrs["class"]:
+                    if clas in ["jp-RenderedMarkdown", "jp-InputArea-editor"]:
+                        if clas == "jp-InputArea-editor":
+                            cell = {}
+                            cell['metadata'] = {}
+                            cell['outputs'] = []
+                            cell['source'] = [d.get_text()]
+                            cell['execution_count'] = None
+                            cell['cell_type'] = 'code'
+                            ipynb['cells'].append(cell)
+                        else:
+                            cell = {}
+                            cell['metadata'] = {}
+                            cell['source'] = [d.decode_contents()]
+                            cell['cell_type'] = 'markdown'
+                            ipynb['cells'].append(cell)
+        return json.dumps(ipynb)
+
     # mute log messages
     def log_message(self, format, *args):
         pass
@@ -177,7 +202,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 version  = self._get_latest_version() + 1
                 new_name = f'{version}_'+ name.split('_', 1)[1]
                 with open('runj/' + new_name, 'w') as f:
-                    f.write(data.get("content"))
+                    f.write(self._html2ipynb(data.get("content")))
                 print(f"Notebook saved: {new_name}")
                 self.send_response_only(OK)
                 self.end_headers()
@@ -199,7 +224,6 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-type', 'text/html; charset=utf-8')
             self.send_header('x-content-type-options', 'nosniff')
             self.send_header('Server', 'RunJ')
-            self.send_header('Cache-Control', 'no-cache')
             self.send_header('Content-length', len(content))
             self.end_headers()
             self.wfile.write(content)
@@ -232,7 +256,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 send_conent(json.dumps(data).encode('utf-8'))
             return
         elif self.path == f"/{self.token}/notebook" if self.token else self.path == '/notebook':
-            exporter = nbconvert.exporters.HTMLExporter()
+            exporter = nbconvert.exporters.HTMLExporter(templage_file='basic')
             notebook_html = exporter.from_filename(filename=self.notebook)[0].encode('utf-8')
             send_conent(notebook_html)
             return
