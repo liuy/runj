@@ -117,6 +117,14 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
+    def _get_latest_version(self):
+        versions = set()
+        for file in os.listdir('./runj'):
+            number = file.split('_', 1)[0]
+            if number.isdigit():
+                versions.add(int(number))
+        return max(versions) if versions else 0
+
     def sanity_check(self):
         # Log client IP address only once
         if self.client_address[0] not in self.connected_ips:
@@ -141,7 +149,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 nb_status = 'stopped'
                 print(f"Notebook stopped: {self.notebook}")
-                self.send_response(OK)
+                self.send_response_only(OK)
                 self.end_headers()
                 return
             except Exception as e:
@@ -150,16 +158,32 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 return
         elif self.path == f"/{self.token}/notebook/run" if self.token else self.path == '/notebook/run':
             try:
-                cmd = f'ipython {self.notebook} > runj.log 2>&1 &'
+                cmd = f'ipython {self.notebook} > {self.notebook}.log 2>&1 &'
                 subprocess.run(cmd, shell=True)
                 nb_status = 'running'
                 nb_start_time = time.time() * 1000
                 print(f"Notebook runing: {self.notebook}")
-                self.send_response(OK)
+                self.send_response_only(OK)
                 self.end_headers()
                 return
             except Exception as e:
                 print(f"Failed to start notebook: {self.notebook}, exception: {e} ")
+                self.send_error(INTERNAL_SERVER_ERROR, 'Internal server error')
+                return
+        elif self.path == f'/{self.token}/notebook/save' if self.token else self.path == '/notebook/save':
+            try: # save notebook as {version+1}{notebook_name}
+                data = json.loads(self.rfile.read(int(self.headers['Content-Length'])).decode('utf-8'))
+                name = data.get("name")
+                version  = self._get_latest_version() + 1
+                new_name = f'{version}_'+ name.split('_', 1)[1]
+                with open('runj/' + new_name, 'w') as f:
+                    f.write(data.get("content"))
+                print(f"Notebook saved: {new_name}")
+                self.send_response_only(OK)
+                self.end_headers()
+                return
+            except Exception as e:
+                print(f"Failed to save notebook: {new_name}, exception: {e} ")
                 self.send_error(INTERNAL_SERVER_ERROR, 'Internal server error')
                 return
         else:
@@ -189,7 +213,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             return
         elif self.path == f"/{self.token}/logs" if self.token else self.path == '/logs':
             # if newline = '', line endings are returned to the caller untranslated
-            with open('runj.log', 'r',  newline='') as f:
+            with open(f'{self.notebook}.log', 'r',  newline='') as f:
                 log = f.read()
                 converter = Ansi2HtmlConverter()
                 log_html = ('<pre>' + converter.convert(log) + '</pre>')
@@ -200,7 +224,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 else:
                     nb_status = 'stopped'
                 data = {
-                    'nb_name': self.notebook,
+                    'nb_name': self.notebook.split('/')[-1],
                     'nb_status': nb_status,
                     'nb_start_time': nb_start_time,
                     'lg_content': log_html
@@ -236,8 +260,11 @@ class Runj:
         if file_dir:
             os.chdir(file_dir)
 
-        log_file = 'runj.log'
-        cmd = f'ipython {file} > {log_file} 2>&1 &'
+
+        cmd = f"mkdir runj; cp {file} runj/'0_{file}'"
+        subprocess.run(cmd, stderr=subprocess.DEVNULL, shell=True)
+        file = f'runj/0_{file}'
+        cmd = f'ipython {file} > {file}.log 2>&1 &'
         if subprocess.run(cmd, shell=True).returncode != 0:
             print(f'Error running command: {cmd}')
             return
@@ -262,7 +289,6 @@ class Runj:
             print('\nShutting down server')
             cmd = f"kill -9 $(ps aux | grep 'ipython {file}' | grep -v grep | awk \'{{print $2}}\')"
             subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
-            os.remove(log_file)
             httpd.shutdown()
 
 if __name__ == '__main__':

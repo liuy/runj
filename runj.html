@@ -44,7 +44,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
     <!-- Notebook content goes here -->
     <header class="w3-container" style="padding-top:22px">
     <h5 class="w3-left"><b><i class="fa fa-book"></i> My Notebook</b></h5>
-    <button id="notebook-save" class="w3-bar-item w3-button w3-right" onclick="notebook.save()"><i class="fa fa-save"></i><b>  Save</b></button>
+    <button id="notebook-edit-save" class="w3-bar-item w3-button w3-right" onclick="notebook.edit_save()"><i class="fa fa-edit"></i><b>  Edit</b></button>
     </header>
     <div id="notebook-content-body" class="w3-container">
     </div>
@@ -92,6 +92,7 @@ const notebook = {
   stop_button: document.getElementById('notebook-stop'),
   timer: document.getElementById('notebook-timer'),
   name: document.getElementById('notebook-name'),
+  edit_save_button: document.getElementById('notebook-edit-save'),
   run: () => {
     fetch(runjhost + '/notebook/run', {method: 'POST'})
     .then(response => {
@@ -120,6 +121,35 @@ const notebook = {
       console.error('Notebook stop request failed:', error);
     });
   },
+  edit_save() {
+    if (notebook.edit_save_button.innerHTML.includes('Save')) {
+      // Save notebook as '{ver+1}'_name
+      const data = {
+        name: notebook.name.innerHTML,
+        content: notebook.body.innerHTML
+      };
+      fetch(runjhost + '/notebook/save', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (response.ok) {
+          notebook.body.contentEditable = false;
+          notebook.edit_save_button.innerHTML = '<i class="fa fa-edit"></i><b>  Edit</b>';
+        } else {
+          console.error('Failed to save notebook!');
+        }
+      })
+      .catch(error => {
+        console.error('Notebook save request failed:', error);
+      });
+    } else {
+      // edit notebook
+      notebook.body.contentEditable = true;
+      notebook.edit_save_button.innerHTML = '<i class="fa fa-save"></i><b>  Save</b>';
+    }
+  }
 }
 
 const runjhost = window.location.href.replace('#', '');
@@ -163,7 +193,7 @@ function updateNotebook(nb) {
     notebook.stop_button.style.display = 'none';
     notebook.run_button.style.display = 'block';
   }
-  notebook.name.innerHTML = nb.name;
+  notebook.name.innerHTML = nb.name
 }
 // Define the function to update the div's content
 const logs = document.getElementById('logs-content-body');
