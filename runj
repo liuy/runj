@@ -183,7 +183,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         if self.sanity_check() is False:
             return
         if self.path == f"/{self.token}":
-            with open('runj.html', 'r') as f:
+            with open(f'{os.path.dirname(__file__)}/runj.html', 'r') as f:
                 runj_html = f.read().encode('utf-8')
                 send_conent(runj_html)
             return
@@ -228,8 +228,6 @@ class Runj:
         file_dir = os.path.dirname(self.filename)
         file = os.path.basename(self.filename)
         if file_dir:
-            # copy runj.html to the same directory as the notebook
-            subprocess.run(f'cp {os.path.dirname(__file__)}/runj.html {file_dir}/runj.html', shell=True)
             os.chdir(file_dir)
 
         log_file = 'runj.log'
@@ -259,8 +257,6 @@ class Runj:
             cmd = f'kill -9 $(ps aux | grep {file} | grep ipython | grep -v grep | awk \'{{print $2}}\')'
             subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             os.remove(log_file)
-            if not os.path.exists('./runj'):
-                os.remove('runj.html')
             httpd.shutdown()
 
 if __name__ == '__main__':
