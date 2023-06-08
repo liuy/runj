@@ -173,39 +173,60 @@ notebook.link.addEventListener('click', () => {
     .then(data => {
       data.forEach(notebookName => {
         const notebook_name = document.createElement('a');
+        const MAX_LENGTH = 30;
+
         notebook_name.href = '#';
-        notebook_name.textContent = '  ' + notebookName;
+        notebook_name.textContent = '  ' + (notebookName.length > MAX_LENGTH ? notebookName.substring(0, MAX_LENGTH) + '...' : notebookName);
         notebook_name.style.paddingLeft = '20px';
         notebook_name.style.textDecoration = 'none';
+        notebook_name.classList.add('w3-small', 'w3-hover-light-gray');
+
         const notebook_icon = document.createElement('i');
-        notebook_icon.className = 'fa fa-book fa-fw';
+        notebook_icon.className = 'fa fa-book';
         notebook_name.insertBefore(notebook_icon, notebook_name.firstChild);
+
         const notebook_div = document.createElement('div');
         notebook_div.style.display = 'block';
         notebook_div.appendChild(notebook_name);
         notebook_list.appendChild(notebook_div);
 
+        // Add event listener to show full notebook name on hover
+        notebook_name.addEventListener('mouseover', function() {
+          notebook_name.title = notebookName;
+        });
+
         // Add a click event listener to the notebook name element
         notebook_name.addEventListener('click', () => {
-          fetch(runjhost + '/notebook/' + notebookName)
-            .then(response => response.text())
-            .then(data => {
-              // Display the notebook content in the notebook-content-body element
-              const notebook_content_body = document.getElementById('notebook-content-body');
-              notebook_content_body.innerHTML = data;
-              // Show the notebook content and hide the logs content
-              document.getElementById('notebook-content').style.display = '';
-              document.getElementById('logs-content').style.display = 'none';
-            })
-            .catch(error => {
-              console.error('Error fetching notebook content:', error);
-            });
+          // Highlight the clicked notebook_name as w3-light-blue
+          notebook_name.classList.add('w3-green');
+          // Highlight the notebook link as w3-blue and remove logs link highlight
+          logsLink.classList.remove('w3-blue');
+          notebook.link.classList.add('w3-blue');
+          // Remove w3-light-blue from other notebook_names in the list
+          const notebook_names = document.querySelectorAll('.w3-small');
+          notebook_names.forEach(name => {
+            if (name !== notebook_name) {
+              name.classList.remove('w3-green');
+          }
         });
+        fetch(runjhost + '/notebook/' + notebookName)
+          .then(response => response.text())
+          .then(data => {
+            // Display the notebook content in the notebook-content-body element
+            notebook.body.innerHTML = data;
+            // Show the notebook content and hide the logs content
+            notebook.content.style.display = '';
+            logsContent.style.display = 'none';
+          })
+          .catch(error => {
+            console.error('Error fetching notebook content:', error);
+          });
       });
-    })
-    .catch(error => {
-      console.error('Error fetching notebook list:', error);
     });
+  })
+  .catch(error => {
+    console.error('Error fetching notebook list:', error);
+  });
 
   // Append the new element to the DOM below the notebook.link element
   notebook.link.parentNode.insertBefore(notebook_list, notebook.link.nextSibling);
@@ -223,6 +244,10 @@ logsLink.addEventListener('click', () => {
   // Hide notebookContent if it is currently displayed
   notebook.content.style.display = 'none';
   notebook.link.classList.remove('w3-blue');
+  const notebook_names = document.querySelectorAll('.w3-small');
+  notebook_names.forEach(name => {
+    name.classList.remove('w3-green');
+  });
 });
 
 function updateNotebook(nb) {
