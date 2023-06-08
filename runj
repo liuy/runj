@@ -298,7 +298,6 @@ class Runj:
         if file_dir:
             os.chdir(file_dir)
 
-
         cmd = f"mkdir runj; cp {file} runj/'0_{file}'"
         subprocess.run(cmd, stderr=subprocess.DEVNULL, shell=True)
         file = f'runj/0_{file}'
