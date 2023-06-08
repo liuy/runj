@@ -163,15 +163,22 @@ notebook.link.addEventListener('click', () => {
   // notebook.content.style.display = '';
   notebook.link.classList.add('w3-blue');
 
-  // Clear the existing notebook_list element
-  while (notebook_list.firstChild) {
-    notebook_list.removeChild(notebook_list.firstChild);
-  }
-
   // Fetch the list of notebook names and populate the new element
   fetch(runjhost + '/notebook/list')
     .then(response => response.json())
     .then(data => {
+      if (notebook_list.childElementCount === data.length) {
+        console.log('Notebook list is up to date');
+        // Click the active notebook to display its content
+        active_notebook = document.getElementById(notebook.active);
+        active_notebook.click();
+        return;
+      }
+      // Clear the existing notebook_list element
+      while (notebook_list.firstChild) {
+        notebook_list.removeChild(notebook_list.firstChild);
+      }
+
       data.forEach(notebookName => {
         const notebook_name = document.createElement('a');
         const MAX_LENGTH = 28;
