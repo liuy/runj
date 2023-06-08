@@ -220,10 +220,11 @@ class RunjHandler(http.server.SimpleHTTPRequestHandler):
         global nb_status
         global nb_start_time
 
-        def send_conent(content):
+        def send_conent(content, cache=True):
             self.send_response(OK)
             self.send_header('Content-type', 'text/html; charset=utf-8')
             self.send_header('x-content-type-options', 'nosniff')
+            self.send_header('Cache-Control', 'max-age=3600' if cache else 'no-cache, must-revalidate')
             self.send_header('Server', 'RunJ')
             self.send_header('Content-length', len(content))
             self.end_headers()
@@ -254,7 +255,7 @@ class RunjHandler(http.server.SimpleHTTPRequestHandler):
                     'nb_start_time': nb_start_time,
                     'lg_content': log_html
                 }
-                send_conent(json.dumps(data).encode('utf-8'))
+                send_conent(json.dumps(data).encode('utf-8'), cache=False)
             return
         elif re.match(rf'^/{self.token}/notebook/.*\.ipynb$', self.path) if self.token else re.match(r'^/notebook/.*\.ipynb$', self.path):
             try:
@@ -272,7 +273,7 @@ class RunjHandler(http.server.SimpleHTTPRequestHandler):
                 if file.endswith('.ipynb'):
                     notebook_list.append(file)
             notebook_list.sort(key=lambda x: int(x.split('_', 1)[0]))
-            send_conent(json.dumps(notebook_list).encode('utf-8'))
+            send_conent(json.dumps(notebook_list).encode('utf-8'), cache=False)
             return
         else:
             self.send_error(NOT_FOUND, 'Not found')
