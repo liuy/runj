@@ -12,7 +12,6 @@ import socketserver
 import socket
 import string
 import random
-from functools import partial
 import nbconvert
 import time
 import json
@@ -107,12 +106,12 @@ NOT_IMPLEMENTED = 501
 nb_status = ''
 nb_start_time = 0
 
-class RunjHandler(http.server.SimpleHTTPRequestHandler):
+class RunjHandler(http.server.BaseHTTPRequestHandler):
     connected_ips = {}
+    token = None
+    notebook = None # working notebook on the server
 
-    def __init__(self, *args, token, notebook, **kwargs):
-        self.token = token
-        self.notebook = notebook
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     # TODO add support for other notebook versions
@@ -177,12 +176,13 @@ class RunjHandler(http.server.SimpleHTTPRequestHandler):
                 print(f"Notebook stopped: {self.notebook}")
                 self.send_response_only(OK)
                 self.end_headers()
-                return
             except Exception as e:
                 print(f"Failed to stop notebook: {self.notebook}, exception: {e} ")
                 self.send_error(INTERNAL_SERVER_ERROR, 'Internal server error')
-                return
-        elif self.path == f"/{self.token}/notebook/run" if self.token else self.path == '/notebook/run':
+            return
+        elif re.match(rf'^/{self.token}/notebook/run/.*\.ipynb$', self.path) if self.token else re.match(r'^/notebook/run/.*\.ipynb$', self.path):
+            # use class.notebook to make the change visible to all the instances of the class
+            RunjHandler.notebook = 'runj/' + self.path.split('/')[-1]
             try:
                 cmd = f'ipython {self.notebook} > {self.notebook}.log 2>&1 &'
                 subprocess.run(cmd, shell=True)
@@ -191,11 +191,10 @@ class RunjHandler(http.server.SimpleHTTPRequestHandler):
                 print(f"Notebook runing: {self.notebook}")
                 self.send_response_only(OK)
                 self.end_headers()
-                return
             except Exception as e:
                 print(f"Failed to start notebook: {self.notebook}, exception: {e} ")
                 self.send_error(INTERNAL_SERVER_ERROR, 'Internal server error')
-                return
+            return
         elif self.path == f'/{self.token}/notebook/save' if self.token else self.path == '/notebook/save':
             try: # save notebook as {version+1}{notebook_name}
                 data = json.loads(self.rfile.read(int(self.headers['Content-Length'])).decode('utf-8'))
@@ -207,11 +206,10 @@ class RunjHandler(http.server.SimpleHTTPRequestHandler):
                 print(f"Notebook saved: {new_name}")
                 self.send_response_only(OK)
                 self.end_headers()
-                return
             except Exception as e:
                 print(f"Failed to save notebook: {new_name}, exception: {e} ")
                 self.send_error(INTERNAL_SERVER_ERROR, 'Internal server error')
-                return
+            return
         else:
             self.send_error(NOT_IMPLEMENTED, 'Not implemented')
             return
@@ -308,7 +306,9 @@ class Runj:
             return
         nb_start_time = time.time() * 1000
         nb_status = 'running'
-        handler = partial(RunjHandler, token=self.token, notebook=file)
+        handler = RunjHandler
+        handler.token = self.token
+        handler.notebook = file
         socketserver.TCPServer.allow_reuse_address=True
         httpd = socketserver.TCPServer((self.ip, self.port), handler)
 

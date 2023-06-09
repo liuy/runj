@@ -18,7 +18,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
   <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj style="text-decoration: none;">RunJ</a></span>
   <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()"><i class="fa fa-stop"></i>  Stop</button>
   <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook.run()"><i class="fa fa-play"></i>  Run</button>
-  <span id="notebook-name" style="display: block" class="w3-bar-item w3-left"></span>
+  <span id="notebook-working" style="display: block" class="w3-bar-item w3-left"></span>
   <span id="notebook-timer" style="display: block" class="w3-bar-item w3-left"></span>
 </div>
 
@@ -91,13 +91,14 @@ const notebook = {
   run_button: document.getElementById('notebook-run'),
   stop_button: document.getElementById('notebook-stop'),
   timer: document.getElementById('notebook-timer'),
-  name: document.getElementById('notebook-name'),
+  working: document.getElementById('notebook-working'),  // notebook working on the server
   edit_save_button: document.getElementById('notebook-edit-save'),
-  active: null,
+  active: null, // active notebook name on the client
   run: () => {
-    fetch(runjhost + '/notebook/run', {method: 'POST'})
+    fetch(runjhost + '/notebook/run/' + notebook.active, {method: 'POST'})
     .then(response => {
       if (response.ok) {
+        notebook.working.innerHTML = notebook.active; // now active notebook working on the server
         notebook.run_button.style.display = 'none';
         notebook.stop_button.style.display = 'block';
       } else {
@@ -126,8 +127,8 @@ const notebook = {
     if (notebook.edit_save_button.innerHTML.includes('Save')) {
       // Save notebook as '{ver+1}'_name
       const data = {
-        name: notebook.name.innerHTML,
-        content: notebook.body.innerHTML
+        name: notebook.active,
+        content: notebook.body.innerHTML,
       };
       fetch(runjhost + '/notebook/save', {
         method: 'POST',
@@ -170,9 +171,9 @@ notebook.tag.addEventListener('click', () => {
     .then(data => {
       if (notebook_list.childElementCount === data.length) {
         console.log('Notebook list is up to date');
-        // Click the active notebook to display its content
-        active_notebook = document.getElementById(notebook.active);
-        active_notebook.click();
+        // Click the working notebook to display its content
+        working_notebook = document.getElementById(notebook.working.innerHTML);
+        working_notebook.click();
         return;
       }
       // Clear the existing notebook_list element
@@ -222,6 +223,7 @@ notebook.tag.addEventListener('click', () => {
           fetch(runjhost + '/notebook/' + notebookName)
             .then(response => response.text())
             .then(data => {
+              notebook.active = notebookName;
               // Display the notebook content in the notebook-content-body element
               notebook.body.innerHTML = data;
               // Show the notebook content and hide the logs content
@@ -232,9 +234,9 @@ notebook.tag.addEventListener('click', () => {
               console.error('Error fetching notebook content:', error);
             });
         });
-        // Click the active notebook to display its content
-        active_notebook = document.getElementById(notebook.active);
-        active_notebook.click();
+        // Click the working notebook to display its content
+        working_notebook = document.getElementById(notebook.working.innerHTML);
+        working_notebook.click();
     });
   })
   .catch(error => {
@@ -252,7 +254,7 @@ notebook.tag.addEventListener('click', () => {
 
 // Add event listener to show tips on hover
 notebook.tag.addEventListener('mouseover', function() {
-  notebook.tag.title = "Click to update version list and show actice notebook";
+  notebook.tag.title = "Click to update version list and show working notebook";
 });
 
 const logsLink = document.querySelector('#logs-link');
@@ -282,8 +284,7 @@ function updateNotebook(nb) {
     notebook.stop_button.style.display = 'none';
     notebook.run_button.style.display = 'block';
   }
-  notebook.name.innerHTML = nb.name;
-  notebook.active = nb.name;
+  notebook.working.innerHTML = nb.name;
 }
 // Define the function to update the div's content
 const logs = document.getElementById('logs-content-body');
