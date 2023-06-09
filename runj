@@ -281,6 +281,17 @@ class RunjHandler(http.server.BaseHTTPRequestHandler):
             log_list.sort(key=lambda x: int(x.split('_', 1)[0]))
             send_conent(json.dumps(log_list).encode('utf-8'), cache=False)
             return
+        elif re.match(rf'^/{self.token}/log/.*\.log$', self.path) if self.token else re.match(r'^/log/.*\.log$', self.path):
+            try:
+                with open('runj/' + self.path.split('/')[-1], 'r',  newline='') as f:
+                    log = f.read()
+                    converter = Ansi2HtmlConverter()
+                    log_html = ('<pre>' + converter.convert(log) + '</pre>').encode('utf-8')
+                    send_conent(log_html)
+            except Exception as e:
+                print(f"Failed to send log: {self.path}, exception: {e} ")
+                self.send_error(INTERNAL_SERVER_ERROR, 'Internal server error')
+            return
         else:
             self.send_error(NOT_FOUND, 'Not found')
             return

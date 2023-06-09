@@ -15,7 +15,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
 <!-- Top container -->
 <div class="w3-bar w3-top w3-black" style="z-index:4">
     <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
-    <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj style="text-decoration: none;" title="Source on Github">RunJ</a></span>
+    <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj style="text-decoration: none;" title="Click to get source"><i class="fa fa-github"></i>  RunJ</a></span>
     <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()" title="Stop the working notebook"><i class="fa fa-stop"></i>  Stop</button>
     <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook.run()" title="Run the working notebook"><i class="fa fa-play"></i>  Run</button>
     <span id="notebook-working" style="display: block" class="w3-bar-item w3-left" title="Working notebook on the server"></span>
@@ -182,31 +182,24 @@ notebook.tag.addEventListener('click', () => {
                 notebook_name.style.textDecoration = 'none';
                 notebook_name.classList.add('w3-hover-light-gray', 'w3-tiny', 'w3-bar-item', 'w3-margin-left')
                 notebook_name.id = notebookName;
+                notebook_name.title = notebookName;
 
                 const notebook_icon = document.createElement('i');
                 notebook_icon.className = 'fa fa-book';
                 notebook_name.insertBefore(notebook_icon, notebook_name.firstChild);
 
-                const notebook_div = document.createElement('div');
-                notebook_div.style.display = 'block';
-                notebook_div.appendChild(notebook_name);
-                notebook_list.appendChild(notebook_div);
-
-                // Add event listener to show full notebook name on hover
-                notebook_name.addEventListener('mouseover', function() {
-                    notebook_name.title = notebookName;
-                });
+                notebook_list.appendChild(notebook_name);
 
                 // Add a click event listener to the notebook name element
                 notebook_name.addEventListener('click', () => {
-                    // Highlight the clicked notebook_name as w3-light-blue
+                    // Highlight the clicked notebook_name
                     notebook_name.classList.add('w3-green');
-                    // Highlight the notebook.tag as w3-blue and remove logs link highlight
+                    // Highlight the notebook.tag as w3-blue and remove log tag highlight
                     log.tag.classList.remove('w3-blue');
                     notebook.tag.classList.add('w3-blue');
-                    // Remove w3-light-blue from other notebook_names in the list
-                    const notebook_names = document.querySelectorAll('.notebook-list a');
-                    notebook_names.forEach(name => {
+                    // Remove highlight from log and notebook list
+                    const names = document.querySelectorAll('.log-list a, .notebook-list a');
+                    names.forEach(name => {
                         if (name !== notebook_name) {
                             name.classList.remove('w3-green');
                         }
@@ -225,11 +218,11 @@ notebook.tag.addEventListener('click', () => {
                             console.error('Error fetching notebook content:', error);
                         });
                 });
-                // Click the working notebook to display its content
-                working_notebook = document.getElementById(notebook.working.innerHTML);
-                if (working_notebook)
-                    working_notebook.click();
-        });
+            });
+            // Click the working notebook to display its content
+            working_notebook = document.getElementById(notebook.working.innerHTML);
+            if (working_notebook)
+                working_notebook.click();
     })
     .catch(error => {
         console.error('Error fetching notebook list:', error);
@@ -252,6 +245,7 @@ const log = {
     tag: document.getElementById('log-tag'),
     content: document.getElementById('log-content'),
     body: document.getElementById('log-content-body'),
+    acive: null,
 }
 
 // Create the log_list element
@@ -278,34 +272,57 @@ log.tag.addEventListener('click', async () => {
         log_name.style.textDecoration = 'none';
         log_name.classList.add('w3-hover-light-gray', 'w3-tiny', 'w3-bar-item', 'w3-margin-left');
         log_name.id = logName;
+        log_name.title = logName;
 
         const log_icon = document.createElement('i');
         log_icon.className = 'fa fa-file-text';
         log_name.insertBefore(log_icon, log_name.firstChild);
 
-        const log_div = document.createElement('div');
-        log_div.style.display = 'block';
-        log_div.appendChild(log_name);
-        log_list.appendChild(log_div);
+        log_list.appendChild(log_name);
 
-        // Add event listener to show full notebook name on hover
-        log_name.addEventListener('mouseover', function() {
-            log_name.title = logName;
+        // Add a click event listener to the log name element
+        log_name.addEventListener('click', () => {
+            // Highlight the clicked log_name
+            log_name.classList.add('w3-green');
+            // Highlight the log.tag as w3-blue and remove notebook tag highlight
+            notebook.tag.classList.remove('w3-blue');
+            log.tag.classList.add('w3-blue');
+            // Remove highlight from other log and notebook list
+            const log_names = document.querySelectorAll('.log-list a, .notebook-list a');
+            log_names.forEach(name => {
+                if (name !== log_name) {
+                    name.classList.remove('w3-green');
+                }
+            });
+            fetch(runjhost + '/log/' + logName)
+                .then(response => response.text())
+                .then(data => {
+                    log.active = logName;
+                    // Display the log content in the log-content-body element
+                    log.body.innerHTML = data;
+                    // Show the log content and hide the notebook content
+                    log.content.style.display = '';
+                    notebook.content.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error fetching log content:', error);
+                });
         });
 
         // Append the new element to the DOM below the log.tag element
         log.tag.parentNode.insertBefore(log_list, log.tag.nextSibling);
     });
 
+    // Click the working log to display its content
+    working_log = document.getElementById(notebook.working.innerHTML + '.log');
+    if (working_log)
+        working_log.click();
+
     // Display the log_list element and hide the notebook content
     log.content.style.display = '';
     log.tag.classList.add('w3-blue');
     notebook.content.style.display = 'none';
     notebook.tag.classList.remove('w3-blue');
-    const notebook_names = document.querySelectorAll('.notebook-list a');
-    notebook_names.forEach(name => {
-        name.classList.remove('w3-green');
-    });
 });
 
 function updateNotebook(nb) {
