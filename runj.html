@@ -14,24 +14,24 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
 
 <!-- Top container -->
 <div class="w3-bar w3-top w3-black" style="z-index:4">
-  <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
-  <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj style="text-decoration: none;" title="Source on Github">RunJ</a></span>
-  <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()" title="Stop the working notebook"><i class="fa fa-stop"></i>  Stop</button>
-  <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook.run()" title="Run the working notebook"><i class="fa fa-play"></i>  Run</button>
-  <span id="notebook-working" style="display: block" class="w3-bar-item w3-left" title="Working notebook on the server"></span>
-  <span id="notebook-timer" style="display: block" class="w3-bar-item w3-left"></span>
+    <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
+    <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj style="text-decoration: none;" title="Source on Github">RunJ</a></span>
+    <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()" title="Stop the working notebook"><i class="fa fa-stop"></i>  Stop</button>
+    <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook.run()" title="Run the working notebook"><i class="fa fa-play"></i>  Run</button>
+    <span id="notebook-working" style="display: block" class="w3-bar-item w3-left" title="Working notebook on the server"></span>
+    <span id="notebook-timer" style="display: block" class="w3-bar-item w3-left"></span>
 </div>
 
 <!-- Sidebar/menu -->
 <nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar"><br>
-  <div class="w3-container">
-    <h5><b class="w3-xlarge"><i class="fa fa-dashboard"></i> Dashboard</b></h5>
-  </div>
-  <div class="w3-bar-block">
-    <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
-    <a href="#" class="w3-bar-item w3-button w3-large" id="notebook-tag"><i class="fa fa-folder fa-fw"></i>  Notebook</a>
-    <a href="#" class="w3-bar-item w3-button w3-large w3-blue" id="log-tag"><i class="fa fa-folder fa-fw"></i>  Logs</a>
-  </div>
+    <div class="w3-container">
+        <h5><b class="w3-xlarge"><i class="fa fa-dashboard"></i> Dashboard</b></h5>
+    </div>
+    <div class="w3-bar-block">
+        <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
+        <a href="#" class="w3-bar-item w3-button w3-large" id="notebook-tag"><i class="fa fa-folder fa-fw"></i>  Notebook</a>
+        <a href="#" class="w3-bar-item w3-button w3-large w3-blue" id="log-tag"><i class="fa fa-folder fa-fw"></i>  Logs</a>
+    </div>
 </nav>
 
 <!-- Overlay effect when opening sidebar on small screens -->
@@ -40,24 +40,24 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
 <!-- !PAGE CONTENT! -->
 <div class="w3-main" style="margin-left:300px;margin-top:43px;">
 
-  <div id="notebook-content" style="display:none;">
-    <!-- Notebook content goes here -->
-    <header class="w3-container" style="padding-top:22px">
-    <h5 class="w3-left"><b><i class="fa fa-book"></i> My Notebook</b></h5>
-    <button id="notebook-edit-save" class="w3-bar-item w3-button w3-right" onclick="notebook.edit_save()"><i class="fa fa-edit"></i><b>  Edit</b></button>
-    </header>
-    <div id="notebook-content-body" class="w3-container">
+    <div id="notebook-content" style="display:none;">
+        <!-- Notebook content goes here -->
+        <header class="w3-container" style="padding-top:22px">
+        <h5 class="w3-left"><b><i class="fa fa-book"></i> My Notebook</b></h5>
+        <button id="notebook-edit-save" class="w3-bar-item w3-button w3-right" onclick="notebook.edit_save()"><i class="fa fa-edit"></i><b>  Edit</b></button>
+        </header>
+        <div id="notebook-content-body" class="w3-container">
+        </div>
     </div>
-  </div>
 
-  <div id="log-content" style="display:'';">
-    <!-- Logs content goes here -->
-    <header class="w3-container" style="padding-top:22px">
-    <h5><b><i class="fa fa-folder"></i> My Logs</b></h5>
-    </header>
-    <div id="log-content-body" class="w3-container"s>
+    <div id="log-content" style="display:'';">
+        <!-- Logs content goes here -->
+        <header class="w3-container" style="padding-top:22px">
+        <h5><b><i class="fa fa-folder"></i> My Logs</b></h5>
+        </header>
+        <div id="log-content-body" class="w3-container"s>
+        </div>
     </div>
-  </div>
 
 <script>
 // Get the Sidebar
@@ -68,90 +68,90 @@ var overlayBg = document.getElementById("myOverlay");
 
 // Toggle between showing and hiding the sidebar, and add overlay effect
 function w3_open() {
-  if (mySidebar.style.display === 'block') {
-    mySidebar.style.display = 'none';
-    overlayBg.style.display = "none";
-  } else {
-    mySidebar.style.display = 'block';
-    overlayBg.style.display = "block";
-  }
+    if (mySidebar.style.display === 'block') {
+        mySidebar.style.display = 'none';
+        overlayBg.style.display = "none";
+    } else {
+        mySidebar.style.display = 'block';
+        overlayBg.style.display = "block";
+    }
 }
 
 // Close the sidebar with the close button
 function w3_close() {
-  mySidebar.style.display = "none";
-  overlayBg.style.display = "none";
+    mySidebar.style.display = "none";
+    overlayBg.style.display = "none";
 }
 
 const notebook = {
-  tag: document.getElementById('notebook-tag'),
-  content: document.getElementById('notebook-content'),
-  body: document.getElementById('notebook-content-body'),
-  run_button: document.getElementById('notebook-run'),
-  stop_button: document.getElementById('notebook-stop'),
-  timer: document.getElementById('notebook-timer'),
-  working: document.getElementById('notebook-working'),  // notebook working on the server
-  edit_save_button: document.getElementById('notebook-edit-save'),
-  active: null, // active notebook name on the client
-  run: () => {
-    fetch(runjhost + '/notebook/run/' + notebook.active, {method: 'POST'})
-    .then(response => {
-      if (response.ok) {
-        notebook.working.innerHTML = notebook.active; // now active notebook working on the server
-        notebook.run_button.style.display = 'none';
-        notebook.stop_button.style.display = 'block';
-      } else {
-        console.error('Failed to run notebook!');
-      }
-    })
-    .catch(error => {
-      console.error('Notebook run request failed:', error);
-    });
-  },
-  stop() {
-    fetch(runjhost + '/notebook/stop', {method: 'POST'})
-    .then(response => {
-      if (response.ok) {
-        notebook.stop_button.style.display = 'none';
-        notebook.run_button.style.display = 'block';
-      } else {
-        console.error('Failed to stop notebook!');
-      }
-    })
-    .catch(error => {
-      console.error('Notebook stop request failed:', error);
-    });
-  },
-  edit_save() {
-    if (notebook.edit_save_button.innerHTML.includes('Save')) {
-      // Save notebook as '{ver+1}'_name
-      const data = {
-        name: notebook.active,
-        content: notebook.body.innerHTML,
-      };
-      fetch(runjhost + '/notebook/save', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-      })
-      .then(response => {
-        if (response.ok) {
-          notebook.body.contentEditable = false;
-          notebook.edit_save_button.innerHTML = '<i class="fa fa-edit"></i><b>  Edit</b>';
-          notebook.tag.click(); // refresh notebook list
+    tag: document.getElementById('notebook-tag'),
+    content: document.getElementById('notebook-content'),
+    body: document.getElementById('notebook-content-body'),
+    run_button: document.getElementById('notebook-run'),
+    stop_button: document.getElementById('notebook-stop'),
+    timer: document.getElementById('notebook-timer'),
+    working: document.getElementById('notebook-working'),  // notebook working on the server
+    edit_save_button: document.getElementById('notebook-edit-save'),
+    active: null, // active notebook name on the client
+    run: () => {
+        fetch(runjhost + '/notebook/run/' + notebook.active, {method: 'POST'})
+        .then(response => {
+            if (response.ok) {
+                notebook.working.innerHTML = notebook.active; // now active notebook working on the server
+                notebook.run_button.style.display = 'none';
+                notebook.stop_button.style.display = 'block';
+            } else {
+                console.error('Failed to run notebook!');
+            }
+        })
+        .catch(error => {
+            console.error('Notebook run request failed:', error);
+        });
+    },
+    stop() {
+        fetch(runjhost + '/notebook/stop', {method: 'POST'})
+        .then(response => {
+            if (response.ok) {
+                notebook.stop_button.style.display = 'none';
+                notebook.run_button.style.display = 'block';
+            } else {
+                console.error('Failed to stop notebook!');
+            }
+        })
+        .catch(error => {
+            console.error('Notebook stop request failed:', error);
+        });
+    },
+    edit_save() {
+        if (notebook.edit_save_button.innerHTML.includes('Save')) {
+            // Save notebook as '{ver+1}'_name
+            const data = {
+                name: notebook.active,
+                content: notebook.body.innerHTML,
+            };
+            fetch(runjhost + '/notebook/save', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.ok) {
+                    notebook.body.contentEditable = false;
+                    notebook.edit_save_button.innerHTML = '<i class="fa fa-edit"></i><b>    Edit</b>';
+                    notebook.tag.click(); // refresh notebook list
+                } else {
+                    console.error('Failed to save notebook!');
+                }
+            })
+            .catch(error => {
+                console.error('Notebook save request failed:', error);
+            });
         } else {
-          console.error('Failed to save notebook!');
+            // edit notebook
+            notebook.body.contentEditable = true;
+            notebook.edit_save_button.innerHTML = '<i class="fa fa-save"></i><b>    Save</b>';
         }
-      })
-      .catch(error => {
-        console.error('Notebook save request failed:', error);
-      });
-    } else {
-      // edit notebook
-      notebook.body.contentEditable = true;
-      notebook.edit_save_button.innerHTML = '<i class="fa fa-save"></i><b>  Save</b>';
     }
-  }
 }
 
 const runjhost = window.location.href.replace('#', '');
@@ -162,96 +162,96 @@ const notebook_list = document.createElement('div');
 notebook_list.classList.add('notebook-list', 'w3-bar-block', 'w3-animate-left');
 
 notebook.tag.addEventListener('click', () => {
-  // notebook.content.style.display = '';
-  notebook.tag.classList.add('w3-blue');
+    // notebook.content.style.display = '';
+    notebook.tag.classList.add('w3-blue');
 
-  // Fetch the list of notebook names and populate the new element
-  fetch(runjhost + '/notebook/list')
-    .then(response => response.json())
-    .then(data => {
-      // Clear the existing notebook_list element
-      while (notebook_list.firstChild) {
-        notebook_list.removeChild(notebook_list.firstChild);
-      }
+    // Fetch the list of notebook names and populate the new element
+    fetch(runjhost + '/notebook/list')
+        .then(response => response.json())
+        .then(data => {
+            // Clear the existing notebook_list element
+            while (notebook_list.firstChild) {
+                notebook_list.removeChild(notebook_list.firstChild);
+            }
 
-      data.forEach(notebookName => {
-        const notebook_name = document.createElement('a');
+            data.forEach(notebookName => {
+                const notebook_name = document.createElement('a');
 
-        notebook_name.href = '#';
-        notebook_name.textContent = '  ' + (notebookName.length > MAX_LENGTH ? notebookName.substring(0, MAX_LENGTH) + '...' : notebookName);
-        notebook_name.style.textDecoration = 'none';
-        notebook_name.classList.add('w3-hover-light-gray', 'w3-tiny', 'w3-bar-item', 'w3-margin-left')
-        notebook_name.id = notebookName;
+                notebook_name.href = '#';
+                notebook_name.textContent = '  ' + (notebookName.length > MAX_LENGTH ? notebookName.substring(0, MAX_LENGTH) + '...' : notebookName);
+                notebook_name.style.textDecoration = 'none';
+                notebook_name.classList.add('w3-hover-light-gray', 'w3-tiny', 'w3-bar-item', 'w3-margin-left')
+                notebook_name.id = notebookName;
 
-        const notebook_icon = document.createElement('i');
-        notebook_icon.className = 'fa fa-book';
-        notebook_name.insertBefore(notebook_icon, notebook_name.firstChild);
+                const notebook_icon = document.createElement('i');
+                notebook_icon.className = 'fa fa-book';
+                notebook_name.insertBefore(notebook_icon, notebook_name.firstChild);
 
-        const notebook_div = document.createElement('div');
-        notebook_div.style.display = 'block';
-        notebook_div.appendChild(notebook_name);
-        notebook_list.appendChild(notebook_div);
+                const notebook_div = document.createElement('div');
+                notebook_div.style.display = 'block';
+                notebook_div.appendChild(notebook_name);
+                notebook_list.appendChild(notebook_div);
 
-        // Add event listener to show full notebook name on hover
-        notebook_name.addEventListener('mouseover', function() {
-          notebook_name.title = notebookName;
+                // Add event listener to show full notebook name on hover
+                notebook_name.addEventListener('mouseover', function() {
+                    notebook_name.title = notebookName;
+                });
+
+                // Add a click event listener to the notebook name element
+                notebook_name.addEventListener('click', () => {
+                    // Highlight the clicked notebook_name as w3-light-blue
+                    notebook_name.classList.add('w3-green');
+                    // Highlight the notebook.tag as w3-blue and remove logs link highlight
+                    log.tag.classList.remove('w3-blue');
+                    notebook.tag.classList.add('w3-blue');
+                    // Remove w3-light-blue from other notebook_names in the list
+                    const notebook_names = document.querySelectorAll('.notebook-list a');
+                    notebook_names.forEach(name => {
+                        if (name !== notebook_name) {
+                            name.classList.remove('w3-green');
+                        }
+                    });
+                    fetch(runjhost + '/notebook/' + notebookName)
+                        .then(response => response.text())
+                        .then(data => {
+                            notebook.active = notebookName;
+                            // Display the notebook content in the notebook-content-body element
+                            notebook.body.innerHTML = data;
+                            // Show the notebook content and hide the logs content
+                            notebook.content.style.display = '';
+                            log.content.style.display = 'none';
+                        })
+                        .catch(error => {
+                            console.error('Error fetching notebook content:', error);
+                        });
+                });
+                // Click the working notebook to display its content
+                working_notebook = document.getElementById(notebook.working.innerHTML);
+                if (working_notebook)
+                    working_notebook.click();
         });
-
-        // Add a click event listener to the notebook name element
-        notebook_name.addEventListener('click', () => {
-          // Highlight the clicked notebook_name as w3-light-blue
-          notebook_name.classList.add('w3-green');
-          // Highlight the notebook.tag as w3-blue and remove logs link highlight
-          log.tag.classList.remove('w3-blue');
-          notebook.tag.classList.add('w3-blue');
-          // Remove w3-light-blue from other notebook_names in the list
-          const notebook_names = document.querySelectorAll('.notebook-list a');
-          notebook_names.forEach(name => {
-            if (name !== notebook_name) {
-              name.classList.remove('w3-green');
-          }
-          });
-          fetch(runjhost + '/notebook/' + notebookName)
-            .then(response => response.text())
-            .then(data => {
-              notebook.active = notebookName;
-              // Display the notebook content in the notebook-content-body element
-              notebook.body.innerHTML = data;
-              // Show the notebook content and hide the logs content
-              notebook.content.style.display = '';
-              log.content.style.display = 'none';
-            })
-            .catch(error => {
-              console.error('Error fetching notebook content:', error);
-            });
-        });
-        // Click the working notebook to display its content
-        working_notebook = document.getElementById(notebook.working.innerHTML);
-        if (working_notebook)
-          working_notebook.click();
+    })
+    .catch(error => {
+        console.error('Error fetching notebook list:', error);
     });
-  })
-  .catch(error => {
-    console.error('Error fetching notebook list:', error);
-  });
 
-  // Append the new element to the DOM below the notebook.tag element
-  notebook.tag.parentNode.insertBefore(notebook_list, notebook.tag.nextSibling);
+    // Append the new element to the DOM below the notebook.tag element
+    notebook.tag.parentNode.insertBefore(notebook_list, notebook.tag.nextSibling);
 
-  // Hide log.content if it is currently displayed
-  log.content.style.display = 'none';
-  log.tag.classList.remove('w3-blue');
+    // Hide log.content if it is currently displayed
+    log.content.style.display = 'none';
+    log.tag.classList.remove('w3-blue');
 });
 
 // Add event listener to show tips on hover
 notebook.tag.addEventListener('mouseover', function() {
-  notebook.tag.title = "Click to update version list and show working notebook";
+    notebook.tag.title = "Click to update version list and show working notebook";
 });
 
 const log = {
-  tag: document.getElementById('log-tag'),
-  content: document.getElementById('log-content'),
-  body: document.getElementById('log-content-body'),
+    tag: document.getElementById('log-tag'),
+    content: document.getElementById('log-content'),
+    body: document.getElementById('log-content-body'),
 }
 
 // Create the log_list element
@@ -260,84 +260,84 @@ log_list.classList.add('log-list', 'w3-bar-block', 'w3-animate-left') ;
 
 // Add a click event listener to the log tag element
 log.tag.addEventListener('click', async () => {
-  // Fetch the log list from the server
-  const response = await fetch(runjhost + '/log/list');
-  const logs = await response.json();
+    // Fetch the log list from the server
+    const response = await fetch(runjhost + '/log/list');
+    const logs = await response.json();
 
-  // Clear the existing notebook_list element
-  while (log_list.firstChild) {
-    log_list.removeChild(log_list.firstChild);
-  }
+    // Clear the existing notebook_list element
+    while (log_list.firstChild) {
+        log_list.removeChild(log_list.firstChild);
+    }
 
-  // Populate the log_list element with the log links
-  logs.forEach(logName => {
-    const log_name = document.createElement('a');
+    // Populate the log_list element with the log links
+    logs.forEach(logName => {
+        const log_name = document.createElement('a');
 
-    log.href = '#';
-    log_name.textContent = '  ' + (logName.length > MAX_LENGTH ? logName.substring(0, MAX_LENGTH) + '...' : logName);
-    log_name.style.textDecoration = 'none';
-    log_name.classList.add('w3-hover-light-gray', 'w3-tiny', 'w3-bar-item', 'w3-margin-left');
-    log_name.id = logName;
+        log.href = '#';
+        log_name.textContent = '    ' + (logName.length > MAX_LENGTH ? logName.substring(0, MAX_LENGTH) + '...' : logName);
+        log_name.style.textDecoration = 'none';
+        log_name.classList.add('w3-hover-light-gray', 'w3-tiny', 'w3-bar-item', 'w3-margin-left');
+        log_name.id = logName;
 
-    const log_icon = document.createElement('i');
-    log_icon.className = 'fa fa-file-text';
-    log_name.insertBefore(log_icon, log_name.firstChild);
+        const log_icon = document.createElement('i');
+        log_icon.className = 'fa fa-file-text';
+        log_name.insertBefore(log_icon, log_name.firstChild);
 
-    const log_div = document.createElement('div');
-    log_div.style.display = 'block';
-    log_div.appendChild(log_name);
-    log_list.appendChild(log_div);
+        const log_div = document.createElement('div');
+        log_div.style.display = 'block';
+        log_div.appendChild(log_name);
+        log_list.appendChild(log_div);
 
-    // Add event listener to show full notebook name on hover
-    log_name.addEventListener('mouseover', function() {
-      log_name.title = logName;
+        // Add event listener to show full notebook name on hover
+        log_name.addEventListener('mouseover', function() {
+            log_name.title = logName;
+        });
+
+        // Append the new element to the DOM below the log.tag element
+        log.tag.parentNode.insertBefore(log_list, log.tag.nextSibling);
     });
 
-    // Append the new element to the DOM below the log.tag element
-    log.tag.parentNode.insertBefore(log_list, log.tag.nextSibling);
-  });
-
-  // Display the log_list element and hide the notebook content
-  log.content.style.display = '';
-  log.tag.classList.add('w3-blue');
-  notebook.content.style.display = 'none';
-  notebook.tag.classList.remove('w3-blue');
-  const notebook_names = document.querySelectorAll('.notebook-list a');
-  notebook_names.forEach(name => {
-    name.classList.remove('w3-green');
-  });
+    // Display the log_list element and hide the notebook content
+    log.content.style.display = '';
+    log.tag.classList.add('w3-blue');
+    notebook.content.style.display = 'none';
+    notebook.tag.classList.remove('w3-blue');
+    const notebook_names = document.querySelectorAll('.notebook-list a');
+    notebook_names.forEach(name => {
+        name.classList.remove('w3-green');
+    });
 });
 
 function updateNotebook(nb) {
-  if (nb.status === 'running') {
-    const now = new Date();
-    const elapsed = Math.floor((now - nb.start_time) / 1000);
-    const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
-    const minutes = Math.floor((elapsed - hours * 3600) / 60).toString().padStart(2, '0');
-    const seconds = (elapsed - hours * 3600 - minutes * 60).toString().padStart(2, '0');
-    notebook.timer.innerHTML = `Running ${hours}:${minutes}:${seconds}`;
-  } else {
-    notebook.timer.innerHTML = notebook.timer.innerHTML.replace('Running', 'Stopped in');
-    notebook.stop_button.style.display = 'none';
-    notebook.run_button.style.display = 'block';
-  }
-  notebook.working.innerHTML = nb.name;
+    if (nb.status === 'running') {
+        const now = new Date();
+        const elapsed = Math.floor((now - nb.start_time) / 1000);
+        const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+        const minutes = Math.floor((elapsed - hours * 3600) / 60).toString().padStart(2, '0');
+        const seconds = (elapsed - hours * 3600 - minutes * 60).toString().padStart(2, '0');
+        notebook.timer.innerHTML = `Running ${hours}:${minutes}:${seconds}`;
+    } else {
+        notebook.timer.innerHTML = notebook.timer.innerHTML.replace('Running', 'Stopped in');
+        notebook.stop_button.style.display = 'none';
+        notebook.run_button.style.display = 'block';
+    }
+    notebook.working.innerHTML = nb.name;
 }
 // Define the function to update the div's content
 function updateDivContent() {
     fetch(runjhost + '/logs')
     .then(response => response.json())
     .then(data => {
-      nb = {
-        name: data.nb_name,
-        status: data.nb_status,
-        start_time: data.nb_start_time,
-      }
-      log.body.innerHTML = data.lg_content;
-      updateNotebook(nb);
+        nb = {
+            name: data.nb_name,
+            status: data.nb_status,
+            start_time: data.nb_start_time,
+        }
+        log.body.innerHTML = data.lg_content;
+        updateNotebook(nb);
     })
     .catch(error => {
-      console.error('Error fetching log content:', error);
+        console.error('Error fetching log content:', error);
     });
 }
 
