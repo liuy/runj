@@ -15,7 +15,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
 <!-- Top container -->
 <div class="w3-bar w3-top w3-black" style="z-index:4">
   <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
-  <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj style="text-decoration: none;">RunJ</a></span>
+  <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj style="text-decoration: none;" title="Source on Github">RunJ</a></span>
   <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()" title="Stop the working notebook"><i class="fa fa-stop"></i>  Stop</button>
   <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook.run()" title="Run the working notebook"><i class="fa fa-play"></i>  Run</button>
   <span id="notebook-working" style="display: block" class="w3-bar-item w3-left" title="Working notebook on the server"></span>
@@ -25,12 +25,12 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
 <!-- Sidebar/menu -->
 <nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar"><br>
   <div class="w3-container">
-    <h5><b class="w3-large"><i class="fa fa-dashboard"></i> Dashboard</b></h5>
+    <h5><b class="w3-xlarge"><i class="fa fa-dashboard"></i> Dashboard</b></h5>
   </div>
   <div class="w3-bar-block">
     <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding w3-large" id="notebook-tag"><i class="fa fa-folder fa-fw"></i>  Notebook</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding w3-large w3-blue" id="log-tag"><i class="fa fa-folder fa-fw"></i>  Logs</a>
+    <a href="#" class="w3-bar-item w3-button w3-large" id="notebook-tag"><i class="fa fa-folder fa-fw"></i>  Notebook</a>
+    <a href="#" class="w3-bar-item w3-button w3-large w3-blue" id="log-tag"><i class="fa fa-folder fa-fw"></i>  Logs</a>
   </div>
 </nav>
 
@@ -155,11 +155,11 @@ const notebook = {
 }
 
 const runjhost = window.location.href.replace('#', '');
-const MAX_LENGTH = 28;
+const MAX_LENGTH = 24;
 
 // Create a new div element to hold the list of notebook names
 const notebook_list = document.createElement('div');
-notebook_list.classList.add('notebook-list');
+notebook_list.classList.add('notebook-list', 'w3-bar-block', 'w3-animate-left');
 
 notebook.tag.addEventListener('click', () => {
   // notebook.content.style.display = '';
@@ -179,9 +179,8 @@ notebook.tag.addEventListener('click', () => {
 
         notebook_name.href = '#';
         notebook_name.textContent = '  ' + (notebookName.length > MAX_LENGTH ? notebookName.substring(0, MAX_LENGTH) + '...' : notebookName);
-        notebook_name.style.paddingLeft = '20px';
         notebook_name.style.textDecoration = 'none';
-        notebook_name.classList.add('w3-hover-light-gray');
+        notebook_name.classList.add('w3-hover-light-gray', 'w3-tiny', 'w3-bar-item', 'w3-margin-left')
         notebook_name.id = notebookName;
 
         const notebook_icon = document.createElement('i');
@@ -257,7 +256,7 @@ const log = {
 
 // Create the log_list element
 const log_list = document.createElement('div');
-log_list.classList.add('w3-bar-item', 'w3-enimate-left') ;
+log_list.classList.add('log-list', 'w3-bar-block', 'w3-animate-left') ;
 
 // Add a click event listener to the log tag element
 log.tag.addEventListener('click', async () => {
@@ -276,13 +275,12 @@ log.tag.addEventListener('click', async () => {
 
     log.href = '#';
     log_name.textContent = '  ' + (logName.length > MAX_LENGTH ? logName.substring(0, MAX_LENGTH) + '...' : logName);
-    log_name.style.paddingLeft = '10px';
     log_name.style.textDecoration = 'none';
-    log_name.classList.add('w3-hover-light-gray');
+    log_name.classList.add('w3-hover-light-gray', 'w3-tiny', 'w3-bar-item', 'w3-margin-left');
     log_name.id = logName;
 
     const log_icon = document.createElement('i');
-    log_icon.className = 'fa fa-file-text-o';
+    log_icon.className = 'fa fa-file-text';
     log_name.insertBefore(log_icon, log_name.firstChild);
 
     const log_div = document.createElement('div');
