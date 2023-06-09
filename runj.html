@@ -16,9 +16,9 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
 <div class="w3-bar w3-top w3-black" style="z-index:4">
   <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
   <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj style="text-decoration: none;">RunJ</a></span>
-  <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()"><i class="fa fa-stop"></i>  Stop</button>
-  <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook.run()"><i class="fa fa-play"></i>  Run</button>
-  <span id="notebook-working" style="display: block" class="w3-bar-item w3-left"></span>
+  <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()" title="Stop the working notebook"><i class="fa fa-stop"></i>  Stop</button>
+  <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook.run()" title="Run the working notebook"><i class="fa fa-play"></i>  Run</button>
+  <span id="notebook-working" style="display: block" class="w3-bar-item w3-left" title="Working notebook on the server"></span>
   <span id="notebook-timer" style="display: block" class="w3-bar-item w3-left"></span>
 </div>
 
@@ -169,13 +169,6 @@ notebook.tag.addEventListener('click', () => {
   fetch(runjhost + '/notebook/list')
     .then(response => response.json())
     .then(data => {
-      if (notebook_list.childElementCount === data.length) {
-        console.log('Notebook list is up to date');
-        // Click the working notebook to display its content
-        working_notebook = document.getElementById(notebook.working.innerHTML);
-        working_notebook.click();
-        return;
-      }
       // Clear the existing notebook_list element
       while (notebook_list.firstChild) {
         notebook_list.removeChild(notebook_list.firstChild);
@@ -251,7 +244,6 @@ notebook.tag.addEventListener('click', () => {
   logsLink.classList.remove('w3-blue');
 });
 
-
 // Add event listener to show tips on hover
 notebook.tag.addEventListener('mouseover', function() {
   notebook.tag.title = "Click to update version list and show working notebook";
@@ -270,6 +262,8 @@ logsLink.addEventListener('click', () => {
     name.classList.remove('w3-green');
   });
 });
+
+
 
 function updateNotebook(nb) {
   if (nb.status === 'running') {
