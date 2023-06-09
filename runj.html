@@ -229,7 +229,8 @@ notebook.tag.addEventListener('click', () => {
         });
         // Click the working notebook to display its content
         working_notebook = document.getElementById(notebook.working.innerHTML);
-        working_notebook.click();
+        if (working_notebook)
+          working_notebook.click();
     });
   })
   .catch(error => {
