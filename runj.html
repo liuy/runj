@@ -29,7 +29,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
   </div>
   <div class="w3-bar-block">
     <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding w3-large" id="notebook-link"><i class="fa fa-folder fa-fw"></i>  Notebook</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding w3-large" id="notebook-tag"><i class="fa fa-folder fa-fw"></i>  Notebook</a>
     <a href="#" class="w3-bar-item w3-button w3-padding w3-large w3-blue" id="logs-link"><i class="fa fa-folder fa-fw"></i>  Logs</a>
   </div>
 </nav>
@@ -85,7 +85,7 @@ function w3_close() {
 }
 
 const notebook = {
-  link: document.getElementById('notebook-link'),
+  tag: document.getElementById('notebook-tag'),
   content: document.getElementById('notebook-content'),
   body: document.getElementById('notebook-content-body'),
   run_button: document.getElementById('notebook-run'),
@@ -138,6 +138,7 @@ const notebook = {
         if (response.ok) {
           notebook.body.contentEditable = false;
           notebook.edit_save_button.innerHTML = '<i class="fa fa-edit"></i><b>  Edit</b>';
+          notebook.tag.click(); // refresh notebook list
         } else {
           console.error('Failed to save notebook!');
         }
@@ -159,9 +160,9 @@ const runjhost = window.location.href.replace('#', '');
 const notebook_list = document.createElement('div');
 notebook_list.classList.add('notebook-list');
 
-notebook.link.addEventListener('click', () => {
+notebook.tag.addEventListener('click', () => {
   // notebook.content.style.display = '';
-  notebook.link.classList.add('w3-blue');
+  notebook.tag.classList.add('w3-blue');
 
   // Fetch the list of notebook names and populate the new element
   fetch(runjhost + '/notebook/list')
@@ -208,9 +209,9 @@ notebook.link.addEventListener('click', () => {
         notebook_name.addEventListener('click', () => {
           // Highlight the clicked notebook_name as w3-light-blue
           notebook_name.classList.add('w3-green');
-          // Highlight the notebook link as w3-blue and remove logs link highlight
+          // Highlight the notebook.tag as w3-blue and remove logs link highlight
           logsLink.classList.remove('w3-blue');
-          notebook.link.classList.add('w3-blue');
+          notebook.tag.classList.add('w3-blue');
           // Remove w3-light-blue from other notebook_names in the list
           const notebook_names = document.querySelectorAll('.notebook-list a');
           notebook_names.forEach(name => {
@@ -240,12 +241,18 @@ notebook.link.addEventListener('click', () => {
     console.error('Error fetching notebook list:', error);
   });
 
-  // Append the new element to the DOM below the notebook.link element
-  notebook.link.parentNode.insertBefore(notebook_list, notebook.link.nextSibling);
+  // Append the new element to the DOM below the notebook.tag element
+  notebook.tag.parentNode.insertBefore(notebook_list, notebook.tag.nextSibling);
 
   // Hide logsContent if it is currently displayed
   logsContent.style.display = 'none';
   logsLink.classList.remove('w3-blue');
+});
+
+
+// Add event listener to show tips on hover
+notebook.tag.addEventListener('mouseover', function() {
+  notebook.tag.title = "Click to update version list and show actice notebook";
 });
 
 const logsLink = document.querySelector('#logs-link');
@@ -255,7 +262,7 @@ logsLink.addEventListener('click', () => {
   logsLink.classList.add('w3-blue');
   // Hide notebookContent if it is currently displayed
   notebook.content.style.display = 'none';
-  notebook.link.classList.remove('w3-blue');
+  notebook.tag.classList.remove('w3-blue');
   const notebook_names = document.querySelectorAll('.notebook-list a');
   notebook_names.forEach(name => {
     name.classList.remove('w3-green');
