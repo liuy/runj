@@ -30,7 +30,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
   <div class="w3-bar-block">
     <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
     <a href="#" class="w3-bar-item w3-button w3-padding w3-large" id="notebook-tag"><i class="fa fa-folder fa-fw"></i>  Notebook</a>
-    <a href="#" class="w3-bar-item w3-button w3-padding w3-large w3-blue" id="logs-link"><i class="fa fa-folder fa-fw"></i>  Logs</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding w3-large w3-blue" id="log-tag"><i class="fa fa-folder fa-fw"></i>  Logs</a>
   </div>
 </nav>
 
@@ -50,15 +50,14 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
     </div>
   </div>
 
-  <div id="logs-content" style="display:'';">
+  <div id="log-content" style="display:'';">
     <!-- Logs content goes here -->
     <header class="w3-container" style="padding-top:22px">
     <h5><b><i class="fa fa-folder"></i> My Logs</b></h5>
     </header>
-    <div id="logs-content-body" class="w3-container"s>
+    <div id="log-content-body" class="w3-container"s>
     </div>
   </div>
-
 
 <script>
 // Get the Sidebar
@@ -204,7 +203,7 @@ notebook.tag.addEventListener('click', () => {
           // Highlight the clicked notebook_name as w3-light-blue
           notebook_name.classList.add('w3-green');
           // Highlight the notebook.tag as w3-blue and remove logs link highlight
-          logsLink.classList.remove('w3-blue');
+          log.tag.classList.remove('w3-blue');
           notebook.tag.classList.add('w3-blue');
           // Remove w3-light-blue from other notebook_names in the list
           const notebook_names = document.querySelectorAll('.notebook-list a');
@@ -221,7 +220,7 @@ notebook.tag.addEventListener('click', () => {
               notebook.body.innerHTML = data;
               // Show the notebook content and hide the logs content
               notebook.content.style.display = '';
-              logsContent.style.display = 'none';
+              log.content.style.display = 'none';
             })
             .catch(error => {
               console.error('Error fetching notebook content:', error);
@@ -240,9 +239,9 @@ notebook.tag.addEventListener('click', () => {
   // Append the new element to the DOM below the notebook.tag element
   notebook.tag.parentNode.insertBefore(notebook_list, notebook.tag.nextSibling);
 
-  // Hide logsContent if it is currently displayed
-  logsContent.style.display = 'none';
-  logsLink.classList.remove('w3-blue');
+  // Hide log.content if it is currently displayed
+  log.content.style.display = 'none';
+  log.tag.classList.remove('w3-blue');
 });
 
 // Add event listener to show tips on hover
@@ -250,11 +249,15 @@ notebook.tag.addEventListener('mouseover', function() {
   notebook.tag.title = "Click to update version list and show working notebook";
 });
 
-const logsLink = document.querySelector('#logs-link');
-const logsContent = document.querySelector('#logs-content');
-logsLink.addEventListener('click', () => {
-  logsContent.style.display = '';
-  logsLink.classList.add('w3-blue');
+const log = {
+  tag: document.getElementById('log-tag'),
+  content: document.getElementById('log-content'),
+  body: document.getElementById('log-content-body'),
+}
+
+log.tag.addEventListener('click', () => {
+  log.content.style.display = '';
+  log.tag.classList.add('w3-blue');
   // Hide notebookContent if it is currently displayed
   notebook.content.style.display = 'none';
   notebook.tag.classList.remove('w3-blue');
@@ -263,8 +266,6 @@ logsLink.addEventListener('click', () => {
     name.classList.remove('w3-green');
   });
 });
-
-
 
 function updateNotebook(nb) {
   if (nb.status === 'running') {
@@ -282,7 +283,6 @@ function updateNotebook(nb) {
   notebook.working.innerHTML = nb.name;
 }
 // Define the function to update the div's content
-const logs = document.getElementById('logs-content-body');
 function updateDivContent() {
     fetch(runjhost + '/logs')
     .then(response => response.json())
@@ -292,7 +292,7 @@ function updateDivContent() {
         status: data.nb_status,
         start_time: data.nb_start_time,
       }
-      logs.innerHTML = data.lg_content;
+      log.body.innerHTML = data.lg_content;
       updateNotebook(nb);
     })
     .catch(error => {
