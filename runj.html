@@ -155,6 +155,7 @@ const notebook = {
 }
 
 const runjhost = window.location.href.replace('#', '');
+const MAX_LENGTH = 28;
 
 // Create a new div element to hold the list of notebook names
 const notebook_list = document.createElement('div');
@@ -175,7 +176,6 @@ notebook.tag.addEventListener('click', () => {
 
       data.forEach(notebookName => {
         const notebook_name = document.createElement('a');
-        const MAX_LENGTH = 28;
 
         notebook_name.href = '#';
         notebook_name.textContent = '  ' + (notebookName.length > MAX_LENGTH ? notebookName.substring(0, MAX_LENGTH) + '...' : notebookName);
@@ -255,10 +255,53 @@ const log = {
   body: document.getElementById('log-content-body'),
 }
 
-log.tag.addEventListener('click', () => {
+// Create the log_list element
+const log_list = document.createElement('div');
+log_list.classList.add('w3-bar-item', 'w3-enimate-left') ;
+
+// Add a click event listener to the log tag element
+log.tag.addEventListener('click', async () => {
+  // Fetch the log list from the server
+  const response = await fetch(runjhost + '/log/list');
+  const logs = await response.json();
+
+  // Clear the existing notebook_list element
+  while (log_list.firstChild) {
+    log_list.removeChild(log_list.firstChild);
+  }
+
+  // Populate the log_list element with the log links
+  logs.forEach(logName => {
+    const log_name = document.createElement('a');
+
+    log.href = '#';
+    log_name.textContent = '  ' + (logName.length > MAX_LENGTH ? logName.substring(0, MAX_LENGTH) + '...' : logName);
+    log_name.style.paddingLeft = '10px';
+    log_name.style.textDecoration = 'none';
+    log_name.classList.add('w3-hover-light-gray');
+    log_name.id = logName;
+
+    const log_icon = document.createElement('i');
+    log_icon.className = 'fa fa-file-text-o';
+    log_name.insertBefore(log_icon, log_name.firstChild);
+
+    const log_div = document.createElement('div');
+    log_div.style.display = 'block';
+    log_div.appendChild(log_name);
+    log_list.appendChild(log_div);
+
+    // Add event listener to show full notebook name on hover
+    log_name.addEventListener('mouseover', function() {
+      log_name.title = logName;
+    });
+
+    // Append the new element to the DOM below the log.tag element
+    log.tag.parentNode.insertBefore(log_list, log.tag.nextSibling);
+  });
+
+  // Display the log_list element and hide the notebook content
   log.content.style.display = '';
   log.tag.classList.add('w3-blue');
-  // Hide notebookContent if it is currently displayed
   notebook.content.style.display = 'none';
   notebook.tag.classList.remove('w3-blue');
   const notebook_names = document.querySelectorAll('.notebook-list a');

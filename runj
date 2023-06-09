@@ -273,6 +273,14 @@ class RunjHandler(http.server.BaseHTTPRequestHandler):
             notebook_list.sort(key=lambda x: int(x.split('_', 1)[0]))
             send_conent(json.dumps(notebook_list).encode('utf-8'), cache=False)
             return
+        elif self.path == f'/{self.token}/log/list' if self.token else self.path == '/log/list':
+            log_list = []
+            for file in os.listdir('runj'):
+                if file.endswith('.log'):
+                    log_list.append(file)
+            log_list.sort(key=lambda x: int(x.split('_', 1)[0]))
+            send_conent(json.dumps(log_list).encode('utf-8'), cache=False)
+            return
         else:
             self.send_error(NOT_FOUND, 'Not found')
             return
