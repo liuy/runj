@@ -53,7 +53,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
     <div id="log-content" style="display:'';">
         <!-- Logs content goes here -->
         <header class="w3-container" style="padding-top:22px">
-        <h5><b><i class="fa fa-folder"></i> My Log</b></h5>
+        <h5><b><i class="fa fa-file-text"></i> My Log</b></h5>
         </header>
         <div id="log-content-body" class="w3-container log-body">
         </div>
@@ -160,15 +160,18 @@ const MAX_LENGTH = 24;
 // Create a new div element to hold the list of notebook names
 const notebook_list = document.createElement('div');
 notebook_list.classList.add('notebook-list', 'w3-bar-block', 'w3-animate-left');
+// Append the new element to the DOM below the notebook.tag element
+notebook.tag.parentNode.insertBefore(notebook_list, notebook.tag.nextSibling);
 
 notebook.tag.addEventListener('click', () => {
-    // notebook.content.style.display = '';
-    notebook.tag.classList.add('w3-blue');
-
     // Fetch the list of notebook names and populate the new element
     fetch(runjhost + '/notebook/list')
         .then(response => response.json())
         .then(data => {
+            if (notebook_list.childElementCount === data.length) {
+                console.log('Notebook list is up to date');
+                return;
+            }
             // Clear the existing notebook_list element
             while (notebook_list.firstChild) {
                 notebook_list.removeChild(notebook_list.firstChild);
@@ -219,21 +222,14 @@ notebook.tag.addEventListener('click', () => {
                         });
                 });
             });
-            // Click the working notebook to display its content
-            working_notebook = document.getElementById(notebook.working.innerHTML);
-            if (working_notebook)
-                working_notebook.click();
     })
     .catch(error => {
         console.error('Error fetching notebook list:', error);
     });
-
-    // Append the new element to the DOM below the notebook.tag element
-    notebook.tag.parentNode.insertBefore(notebook_list, notebook.tag.nextSibling);
-
-    // Hide log.content if it is currently displayed
-    log.content.style.display = 'none';
-    log.tag.classList.remove('w3-blue');
+    // Click the working notebook to display its content
+    working_notebook = document.getElementById(notebook.working.innerHTML);
+    if (working_notebook)
+        working_notebook.click();
 });
 
 // Add event listener to show tips on hover
@@ -250,6 +246,8 @@ const log = {
 // Create the log_list element
 const log_list = document.createElement('div');
 log_list.classList.add('log-list', 'w3-bar-block', 'w3-animate-left') ;
+// Append the new element to the DOM below the log.tag element
+log.tag.parentNode.insertBefore(log_list, log.tag.nextSibling);
 
 // Create the log_body_list element
 const log_body_list = document.createElement('div');
@@ -265,6 +263,13 @@ log.tag.addEventListener('click', async () => {
     // Fetch the log list from the server
     const response = await fetch(runjhost + '/log/list');
     const logs = await response.json();
+
+    if (log_list.childElementCount === logs.length) {
+        console.log('Log list is up to date');
+        working_log = document.getElementById(notebook.working.innerHTML + '.log');
+        working_log.click();
+        return;
+    }
 
     // Clear the existing notebook_list element
     while (log_list.firstChild) {
@@ -291,8 +296,6 @@ log.tag.addEventListener('click', async () => {
         log_name.insertBefore(log_icon, log_name.firstChild);
 
         log_list.appendChild(log_name);
-        // Append the new element to the DOM below the log.tag element
-        log.tag.parentNode.insertBefore(log_list, log.tag.nextSibling);
 
         // Create a new div element with the w3-container class to hold the log content
         const log_body = document.createElement("div");
@@ -320,7 +323,6 @@ log.tag.addEventListener('click', async () => {
                 fetch(runjhost + '/log/' + logName)
                     .then(response => response.text())
                     .then(data => {
-                        console.log('fetch log for ' + logName);
                         log_body.innerHTML = data;
                     })
                     .catch(error => {
@@ -332,12 +334,10 @@ log.tag.addEventListener('click', async () => {
             notebook.content.style.display = 'none';
             // Show the log body
             log_body.style.display = 'block';
-            console.log(logName + 'clicked')
             // Show the clicked log body and hide other log bodies
             const log_bodys = document.querySelectorAll(".log-body");
             log_bodys.forEach(body => {
                 if (body !== log_body) {
-                    console.log(body.id + ' hidden')
                     body.style.display = 'none';
                 }
             });
@@ -348,12 +348,6 @@ log.tag.addEventListener('click', async () => {
     working_log = document.getElementById(notebook.working.innerHTML + '.log');
     if (working_log)
         working_log.click();
-
-    // Display the log_list element and hide the notebook content
-    log.content.style.display = '';
-    log.tag.classList.add('w3-blue');
-    notebook.content.style.display = 'none';
-    notebook.tag.classList.remove('w3-blue');
 });
 
 function updateNotebook(nb) {
