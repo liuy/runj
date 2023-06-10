@@ -29,7 +29,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
     </div>
     <div class="w3-bar-block">
         <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
-        <a href="#" class="w3-bar-item w3-button w3-large" id="notebook-tag"><i class="fa fa-folder fa-fw"></i>  Notebook</a>
+        <a href="#" class="w3-bar-item w3-button w3-large" id="notebook-tag"><i class="fa fa-folder fa-fw"></i>  Notebooks</a>
         <a href="#" class="w3-bar-item w3-button w3-large w3-blue" id="log-tag"><i class="fa fa-folder fa-fw"></i>  Logs</a>
     </div>
 </nav>
@@ -53,9 +53,9 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
     <div id="log-content" style="display:'';">
         <!-- Logs content goes here -->
         <header class="w3-container" style="padding-top:22px">
-        <h5><b><i class="fa fa-folder"></i> My Logs</b></h5>
+        <h5><b><i class="fa fa-folder"></i> My Log</b></h5>
         </header>
-        <div id="log-content-body" class="w3-container"s>
+        <div id="log-content-body" class="w3-container log-body">
         </div>
     </div>
 
@@ -245,12 +245,20 @@ const log = {
     tag: document.getElementById('log-tag'),
     content: document.getElementById('log-content'),
     body: document.getElementById('log-content-body'),
-    acive: null,
 }
 
 // Create the log_list element
 const log_list = document.createElement('div');
 log_list.classList.add('log-list', 'w3-bar-block', 'w3-animate-left') ;
+
+// Create the log_body_list element
+const log_body_list = document.createElement('div');
+log_body_list.classList.add('log-body-list')
+log.content.appendChild(log_body_list);
+
+function is_working_log(logName) {
+    return logName === notebook.working.innerHTML + '.log';
+}
 
 // Add a click event listener to the log tag element
 log.tag.addEventListener('click', async () => {
@@ -261,6 +269,10 @@ log.tag.addEventListener('click', async () => {
     // Clear the existing notebook_list element
     while (log_list.firstChild) {
         log_list.removeChild(log_list.firstChild);
+    }
+    // Clear the existing log_body_list element
+    while (log_body_list.firstChild) {
+        log_body_list.removeChild(log_body_list.firstChild);
     }
 
     // Populate the log_list element with the log links
@@ -279,6 +291,15 @@ log.tag.addEventListener('click', async () => {
         log_name.insertBefore(log_icon, log_name.firstChild);
 
         log_list.appendChild(log_name);
+        // Append the new element to the DOM below the log.tag element
+        log.tag.parentNode.insertBefore(log_list, log.tag.nextSibling);
+
+        // Create a new div element with the w3-container class to hold the log content
+        const log_body = document.createElement("div");
+        log_body.classList.add("w3-container", "log-body");
+        log_body.id = logName + 'body';
+        log_body.style.display = 'none';
+        log_body_list.appendChild(log_body);
 
         // Add a click event listener to the log name element
         log_name.addEventListener('click', () => {
@@ -294,23 +315,33 @@ log.tag.addEventListener('click', async () => {
                     name.classList.remove('w3-green');
                 }
             });
-            fetch(runjhost + '/log/' + logName)
-                .then(response => response.text())
-                .then(data => {
-                    log.active = logName;
-                    // Display the log content in the log-content-body element
-                    log.body.innerHTML = data;
-                    // Show the log content and hide the notebook content
-                    log.content.style.display = '';
-                    notebook.content.style.display = 'none';
-                })
-                .catch(error => {
-                    console.error('Error fetching log content:', error);
-                });
+            // Fetch the log content from the server if it is not the working log
+            if (!is_working_log(logName)) {
+                fetch(runjhost + '/log/' + logName)
+                    .then(response => response.text())
+                    .then(data => {
+                        console.log('fetch log for ' + logName);
+                        log_body.innerHTML = data;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching log content:', error);
+                    });
+            }
+            // Show the log content and hide the notebook content
+            log.content.style.display = '';
+            notebook.content.style.display = 'none';
+            // Show the log body
+            log_body.style.display = 'block';
+            console.log(logName + 'clicked')
+            // Show the clicked log body and hide other log bodies
+            const log_bodys = document.querySelectorAll(".log-body");
+            log_bodys.forEach(body => {
+                if (body !== log_body) {
+                    console.log(body.id + ' hidden')
+                    body.style.display = 'none';
+                }
+            });
         });
-
-        // Append the new element to the DOM below the log.tag element
-        log.tag.parentNode.insertBefore(log_list, log.tag.nextSibling);
     });
 
     // Click the working log to display its content
@@ -350,7 +381,11 @@ function updateDivContent() {
             status: data.nb_status,
             start_time: data.nb_start_time,
         }
-        log.body.innerHTML = data.lg_content;
+        log_working_body = document.getElementById(nb.name + '.log' + 'body');
+        if (log_working_body)
+            log_working_body.innerHTML = data.lg_content;
+        else
+            log.body.innerHTML = data.lg_content;
         updateNotebook(nb);
     })
     .catch(error => {
