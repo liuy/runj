@@ -4,7 +4,7 @@
 
 `runj` is a Python script that runs a Jupyter notebook and serves the output as a web page for you.
 
-### Snapshots
+### Gallery
 - A standard setup in a server
 ![Image text](https://github.com/liuy/runj/blob/master/.images/runj3.png?raw=true)
 
@@ -17,6 +17,9 @@
 - Show notebook file content
 ![Image text](https://github.com/liuy/runj/blob/master/.images/runj4.png?raw=true)
 
+- Show versioned notebook list on the phone
+![Image text](https://github.com/liuy/runj/blob/master/.images/runj5.jpg?raw=true)
+
 ## Why
 
 I was struggling to search for a lightweight and simple program that  
@@ -24,13 +27,13 @@ I was struggling to search for a lightweight and simple program that
 - run the whole cells of a Jupyter book that would span hours
 - serve the output for viewing in a browser so I can view it remotely on my phone
 - show tqdm progress bar nicely
+- *could edit and maintain a versioned list of notebooks and logs* (For AI hyperparams tuning)
 
 Supprisingly, there was NO such tools. So I ended up wrting it on my own through a late night.
 
 ## Requirement
 
-- Jupyter or ipython installed
-- Python installed
+- Jupyter or ipython & nbconvert installed
 
 ## Setup
 
@@ -38,6 +41,7 @@ Supprisingly, there was NO such tools. So I ended up wrting it on my own through
 $ git clone https://github.com/liuy/runj.git
 $ cd runj
 $ chmod +x runj # allow execution
+$ pip install -r requirements.txt # check requirements
 ```
 
 Then volia there you are!
