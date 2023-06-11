@@ -18,7 +18,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
     <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj style="text-decoration: none;" title="Click to get source"><i class="fa fa-github"></i>  RunJ</a></span>
     <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()" title="Stop the working notebook"><i class="fa fa-stop"></i>  Stop</button>
     <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook.run()" title="Run the working notebook"><i class="fa fa-play"></i>  Run</button>
-    <span id="notebook-working" style="display: block" class="w3-bar-item w3-left" title="Working notebook on the server"></span>
+    <span id="notebook-working" style="display: block" class="w3-button w3-left" title="Working notebook on the server"></span>
     <span id="notebook-timer" style="display: block" class="w3-bar-item w3-left"></span>
 </div>
 
@@ -97,7 +97,7 @@ const notebook = {
         fetch(runjhost + '/notebook/run/' + notebook.active, {method: 'POST'})
         .then(response => {
             if (response.ok) {
-                notebook.working.innerHTML = notebook.active; // now active notebook working on the server
+                notebook.working.textContent = notebook.active; // now active notebook working on the server
                 notebook.run_button.style.display = 'none';
                 notebook.stop_button.style.display = 'block';
             } else {
@@ -156,6 +156,12 @@ const notebook = {
 
 const runjhost = window.location.href.replace('#', '');
 const MAX_LENGTH = 24;
+
+notebook.working.addEventListener('click', () => {
+    let working_log = document.getElementById(notebook.working.textContent + '.log');
+    if (working_log)
+        working_log.click();
+});
 
 // Create a new div element to hold the list of notebook names
 const notebook_list = document.createElement('div');
@@ -256,7 +262,7 @@ log_body_list.classList.add('log-body-list')
 log.content.appendChild(log_body_list);
 
 function is_working_log(logName) {
-    return logName === notebook.working.innerHTML + '.log';
+    return logName === notebook.working.textContent + '.log';
 }
 
 // Add a click event listener to the log tag element
@@ -357,7 +363,7 @@ function updateNotebook(nb) {
         notebook.stop_button.style.display = 'none';
         notebook.run_button.style.display = 'block';
     }
-    notebook.working.innerHTML = nb.name;
+    notebook.working.textContent = nb.name;
 }
 // Define the function to update the div's content
 function updateDivContent() {
@@ -394,7 +400,7 @@ async function main() {
     let working_log;
     do {
         await sleep(500);
-        working_log = document.getElementById(notebook.working.innerHTML + '.log');
+        working_log = document.getElementById(notebook.working.textContent + '.log');
     } while (!working_log);
     working_log.click();
 }
