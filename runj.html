@@ -357,9 +357,9 @@ function updateNotebook(nb) {
         const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
         const minutes = Math.floor((elapsed - hours * 3600) / 60).toString().padStart(2, '0');
         const seconds = (elapsed - hours * 3600 - minutes * 60).toString().padStart(2, '0');
-        notebook.timer.innerHTML = `${hours}:${minutes}:${seconds}`;
+        notebook.timer.innerHTML = `R ${hours}:${minutes}:${seconds}`;
     } else {
-        notebook.timer.innerHTML = `Stopped in ${hours}:${minutes}:${seconds}`;
+        notebook.timer.innerHTML = notebook.timer.innerHTML.replace('R', 'S');
         notebook.stop_button.style.display = 'none';
         notebook.run_button.style.display = 'block';
     }
