@@ -15,17 +15,17 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
 <!-- Top container -->
 <div class="w3-bar w3-top w3-black" style="z-index:4">
     <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
-    <span class="w3-bar-item w3-right"><a href=https://github.com/liuy/runj style="text-decoration: none;" title="Click to get source"><i class="fa fa-github"></i>  RunJ</a></span>
+    <span class="w3-bar-item w3-right w3-hide-small"><a href=https://github.com/liuy/runj style="text-decoration: none;" title="Click to get source"><i class="fa fa-github "></i>  RunJ</a></span>
     <button id="notebook-stop" class="w3-bar-item w3-button w3-left" onclick="notebook.stop()" title="Stop the working notebook"><i class="fa fa-stop"></i>  Stop</button>
     <button id="notebook-run" style="display: none" class="w3-bar-item w3-button w3-left" onclick="notebook.run()" title="Run the working notebook"><i class="fa fa-play"></i>  Run</button>
-    <span id="notebook-working" style="display: block" class="w3-button w3-left" title="Working notebook on the server"></span>
+    <span id="notebook-working" style="display: block; overflow:hidden;text-overflow: ellipsis;white-space: nowrap;width: clamp(100px, 20%, 400px);" class="w3-button w3-left" title="Working notebook on the server"></span>
     <span id="notebook-timer" style="display: block" class="w3-bar-item w3-left"></span>
 </div>
 
 <!-- Sidebar/menu -->
 <nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar"><br>
     <div class="w3-container">
-        <h5><b class="w3-xlarge"><i class="fa fa-dashboard"></i> Dashboard</b></h5>
+        <h5><b class="w3-xlarge w3-border-bottom"><i class="fa fa-dashboard"></i> Dashboard</b></h5>
     </div>
     <div class="w3-bar-block">
         <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
@@ -357,9 +357,9 @@ function updateNotebook(nb) {
         const hours = Math.floor(elapsed / 3600).toString().padStart(2, '0');
         const minutes = Math.floor((elapsed - hours * 3600) / 60).toString().padStart(2, '0');
         const seconds = (elapsed - hours * 3600 - minutes * 60).toString().padStart(2, '0');
-        notebook.timer.innerHTML = `Running ${hours}:${minutes}:${seconds}`;
+        notebook.timer.innerHTML = `${hours}:${minutes}:${seconds}`;
     } else {
-        notebook.timer.innerHTML = notebook.timer.innerHTML.replace('Running', 'Stopped in');
+        notebook.timer.innerHTML = `Stopped in ${hours}:${minutes}:${seconds}`;
         notebook.stop_button.style.display = 'none';
         notebook.run_button.style.display = 'block';
     }
