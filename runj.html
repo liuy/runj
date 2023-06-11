@@ -403,6 +403,7 @@ async function main() {
         working_log = document.getElementById(notebook.working.textContent + '.log');
     } while (!working_log);
     working_log.click();
+    notebook.active = notebook.working.textContent;
 }
 
 main();
