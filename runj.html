@@ -29,8 +29,8 @@ html,body,h1,h2,h3,h4,h5 {font-family: "lucida grande", "lucida sans unicode", l
     </div>
     <div class="w3-bar-block">
         <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
-        <a href="#" class="w3-bar-item w3-button w3-large" id="notebook-tag"><i class="fa fa-folder fa-fw"></i>  Notebooks</a>
-        <a href="#" class="w3-bar-item w3-button w3-large w3-blue" id="log-tag"><i class="fa fa-folder fa-fw"></i>  Logs</a>
+        <a href="#" class="w3-bar-item w3-button w3-large" id="notebook-tag"><i class="fa fa-folder fa-fw"></i>  Notebooks   <i class="fa fa-sort-down"></i></a>
+        <a href="#" class="w3-bar-item w3-button w3-large w3-blue" id="log-tag"><i class="fa fa-folder fa-fw"></i>  Logs   <i class="fa fa-sort-down"></i></a>
     </div>
 </nav>
 
@@ -159,11 +159,16 @@ const MAX_LENGTH = 24;
 
 // Create a new div element to hold the list of notebook names
 const notebook_list = document.createElement('div');
-notebook_list.classList.add('notebook-list', 'w3-bar-block', 'w3-animate-left');
+notebook_list.classList.add('notebook-list', 'w3-bar-block', 'w3-animate-left', 'w3-hide');
 // Append the new element to the DOM below the notebook.tag element
 notebook.tag.parentNode.insertBefore(notebook_list, notebook.tag.nextSibling);
 
-notebook.tag.addEventListener('click', async () => {
+notebook.tag.title = 'Click to show/hide notebook list';
+notebook.tag.addEventListener('click', () => {
+    notebook_list.classList.toggle('w3-show');
+});
+
+async function update_and_populate_notebook_list() {
     // Fetch the list of notebook names and populate the new element
     const response = await fetch(runjhost + '/notebook/list');
     if (!response.ok) {
@@ -174,8 +179,6 @@ notebook.tag.addEventListener('click', async () => {
 
     if (notebook_list.childElementCount === notebooks.length) {
         console.log('Notebook list is up to date');
-        working_notebook = document.getElementById(notebook.working.innerHTML);
-        working_notebook.click();
         return;
     }
 
@@ -227,19 +230,8 @@ notebook.tag.addEventListener('click', async () => {
                     console.error('Error fetching notebook content:', error);
                 });
         });
-    // Click the working notebook to display its content
-    working_notebook = document.getElementById(notebook.working.innerHTML);
-    if (working_notebook)
-        working_notebook.click();
-    else
-        console.log(notebook.working.innerHTML + ' not found in notebook list');
     });
-});
-
-// Add event listener to show tips on hover
-notebook.tag.addEventListener('mouseover', function() {
-    notebook.tag.title = "Click to update version list and show working notebook";
-});
+}
 
 const log = {
     tag: document.getElementById('log-tag'),
@@ -249,9 +241,14 @@ const log = {
 
 // Create the log_list element
 const log_list = document.createElement('div');
-log_list.classList.add('log-list', 'w3-bar-block', 'w3-animate-left') ;
+log_list.classList.add('log-list', 'w3-bar-block', 'w3-animate-left', 'w3-hide');
 // Append the new element to the DOM below the log.tag element
 log.tag.parentNode.insertBefore(log_list, log.tag.nextSibling);
+
+log.tag.title = 'Click to show/hide log list';
+log.tag.addEventListener('click', () => {
+    log_list.classList.toggle('w3-show');
+});
 
 // Create the log_body_list element
 const log_body_list = document.createElement('div');
@@ -263,15 +260,13 @@ function is_working_log(logName) {
 }
 
 // Add a click event listener to the log tag element
-log.tag.addEventListener('click', async () => {
+async function update_and_populate_log_list() {
     // Fetch the log list from the server
     const response = await fetch(runjhost + '/log/list');
     const logs = await response.json();
 
     if (log_list.childElementCount === logs.length) {
         console.log('Log list is up to date');
-        working_log = document.getElementById(notebook.working.innerHTML + '.log');
-        working_log.click();
         return;
     }
 
@@ -347,12 +342,7 @@ log.tag.addEventListener('click', async () => {
             });
         });
     });
-
-    // Click the working log to display its content
-    working_log = document.getElementById(notebook.working.innerHTML + '.log');
-    if (working_log)
-        working_log.click();
-});
+}
 
 function updateNotebook(nb) {
     if (nb.status === 'running') {
@@ -391,9 +381,25 @@ function updateDivContent() {
     });
 }
 
-// Call the function every 1 second
-setInterval(updateDivContent, 1000);
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
+async function main() {
+    // Call the function every 1 second
+    setInterval(updateDivContent, 1000);
+    update_and_populate_notebook_list();
+    await update_and_populate_log_list();
+    // Click the working log to display its content
+    let working_log;
+    do {
+        await sleep(500);
+        working_log = document.getElementById(notebook.working.innerHTML + '.log');
+    } while (!working_log);
+    working_log.click();
+}
+
+main();
 </script>
 
 </body>
