@@ -139,7 +139,7 @@ const notebook = {
                 if (response.ok) {
                     notebook.body.contentEditable = false;
                     notebook.edit_save_button.innerHTML = '<i class="fa fa-edit"></i><b>    Edit</b>';
-                    notebook.tag.click(); // refresh notebook list
+                    update_and_populate_notebook_list();
                 } else {
                     console.error('Failed to save notebook!');
                 }

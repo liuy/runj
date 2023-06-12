@@ -236,24 +236,26 @@ class RunjHandler(http.server.BaseHTTPRequestHandler):
                 send_conent(runj_html)
             return
         elif self.path == f"/{self.token}/logs" if self.token else self.path == '/logs':
+            cmd = f"ps aux | grep 'ipython {self.notebook}' | grep -v grep"
+            p = subprocess.run(cmd, capture_output=True, shell=True)
+            if p.stdout != b'':
+                nb_status = 'running'
+            else:
+                nb_status = 'stopped'
             # if newline = '', line endings are returned to the caller untranslated
-            with open(f'{self.notebook}.log', 'r',  newline='') as f:
-                log = f.read()
-                converter = Ansi2HtmlConverter()
-                log_html = ('<pre>' + converter.convert(log) + '</pre>')
-                cmd = f"ps aux | grep 'ipython {self.notebook}' | grep -v grep"
-                p = subprocess.run(cmd, capture_output=True, shell=True)
-                if p.stdout != b'':
-                    nb_status = 'running'
-                else:
-                    nb_status = 'stopped'
-                data = {
-                    'nb_name': self.notebook.split('/')[-1],
-                    'nb_status': nb_status,
-                    'nb_start_time': nb_start_time,
-                    'lg_content': log_html
-                }
-                send_conent(json.dumps(data).encode('utf-8'), cache=False)
+            log_html = ''
+            if os.path.isfile(f'{self.notebook}.log'): # with --no-exec, the log file may not exist
+                with open(f'{self.notebook}.log', 'r',  newline='') as f:
+                    log = f.read()
+                    converter = Ansi2HtmlConverter()
+                    log_html = ('<pre>' + converter.convert(log) + '</pre>')
+            data = {
+                'nb_name': self.notebook.split('/')[-1],
+                'nb_status': nb_status,
+                'nb_start_time': nb_start_time,
+                'lg_content': log_html
+            }
+            send_conent(json.dumps(data).encode('utf-8'), cache=False)
             return
         elif re.match(rf'^/{self.token}/notebook/.*\.ipynb$', self.path) if self.token else re.match(r'^/notebook/.*\.ipynb$', self.path):
             try:
