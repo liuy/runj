@@ -218,7 +218,7 @@ class RunjHandler(http.server.BaseHTTPRequestHandler):
         global nb_status
         global nb_start_time
 
-        def send_conent(content, cache=True):
+        def send_conent(content, cache=False):
             self.send_response(OK)
             self.send_header('Content-type', 'text/html; charset=utf-8')
             self.send_header('x-content-type-options', 'nosniff')
