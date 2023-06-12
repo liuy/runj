@@ -297,12 +297,13 @@ class RunjHandler(http.server.BaseHTTPRequestHandler):
             return
 
 class Runj:
-    def __init__(self, filename, ip='0.0.0.0', port=8090, token=False):
+    def __init__(self, filename, ip='0.0.0.0', port=8090, token=False, no_exec=False):
         self.filename = filename
         self.ip = ip
         self.port = port
         # Generate a random token in URL to prevent unauthorized access if token is True
         self.token = ''.join(random.choices(string.ascii_letters + string.digits, k=8)) if token else ''
+        self.no_exec = no_exec
 
     def run(self):
         global nb_status
@@ -320,11 +321,10 @@ class Runj:
         subprocess.run(cmd, stderr=subprocess.DEVNULL, shell=True)
         file = f'runj/0_{file}'
         cmd = f'ipython {file} > {file}.log 2>&1 &'
-        if subprocess.run(cmd, shell=True).returncode != 0:
-            print(f'Error running command: {cmd}')
-            return
+        if not self.no_exec:
+            subprocess.run(cmd, shell=True)
         nb_start_time = time.time() * 1000
-        nb_status = 'running'
+        nb_status = 'running' if not self.no_exec else 'stopped'
         handler = RunjHandler
         handler.token = self.token
         handler.notebook = file
@@ -353,11 +353,12 @@ if __name__ == '__main__':
     e=f'Example: {sys.argv[0]} text.ipynb\n'
     parser = argparse.ArgumentParser(prog=sys.argv[0], description=d, epilog=e)
     parser.add_argument('filename', help='Name of the notebook file to run')
-    parser.add_argument('--ip', default='0.0.0.0', help='IP address to serve the output on (default: 0.0.0.0)')
-    parser.add_argument('--port', type=int, default=8090, help='Port to serve the output on (default: 8090)')
+    parser.add_argument('-i', '--ip', default='0.0.0.0', help='IP address to serve the output on (default: 0.0.0.0)')
+    parser.add_argument('-p', '--port', type=int, default=8090, help='Port to serve the output on (default: 8090)')
     parser.add_argument('-t', '--token', action='store_true', help='Generate a token for a safe URL')
+    parser.add_argument('-n', '--no-exec', action='store_true', help='Do not execute the notebook')
 
     args = parser.parse_args()
 
-    runj = Runj(args.filename, args.ip, args.port, args.token)
+    runj = Runj(args.filename, args.ip, args.port, args.token, args.no_exec)
     runj.run()
