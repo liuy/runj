@@ -170,7 +170,7 @@ class RunjHandler(http.server.BaseHTTPRequestHandler):
             return
         if self.path == f"/{self.token}/notebook/stop" if self.token else self.path == '/notebook/stop':
             try:
-                cmd = f"kill -9 $(ps aux | grep 'ipython {self.notebook}' | grep -v grep | awk \'{{print $2}}\')"
+                cmd = f"kill -9 $(ps aux | grep 'ipython --cache-size=0 {self.notebook}' | grep -v grep | awk \'{{print $2}}\')"
                 subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
                 nb_status = 'stopped'
                 print(f"Notebook stopped: {self.notebook}")
@@ -184,7 +184,7 @@ class RunjHandler(http.server.BaseHTTPRequestHandler):
             # use class.notebook to make the change visible to all the instances of the class
             RunjHandler.notebook = 'runj/' + self.path.split('/')[-1]
             try:
-                cmd = f'ipython {self.notebook} > {self.notebook}.log 2>&1 &'
+                cmd = f'ipython --cache-size=0 {self.notebook} > {self.notebook}.log 2>&1 &'
                 subprocess.run(cmd, shell=True)
                 nb_status = 'running'
                 nb_start_time = time.time() * 1000
@@ -236,7 +236,7 @@ class RunjHandler(http.server.BaseHTTPRequestHandler):
                 send_conent(runj_html)
             return
         elif self.path == f"/{self.token}/logs" if self.token else self.path == '/logs':
-            cmd = f"ps aux | grep 'ipython {self.notebook}' | grep -v grep"
+            cmd = f"ps aux | grep 'ipython --cache-size=0 {self.notebook}' | grep -v grep"
             p = subprocess.run(cmd, capture_output=True, shell=True)
             if p.stdout != b'':
                 nb_status = 'running'
@@ -322,7 +322,7 @@ class Runj:
         cmd = f"mkdir runj; cp {file} runj/'0_{file}'"
         subprocess.run(cmd, stderr=subprocess.DEVNULL, shell=True)
         file = f'runj/0_{file}'
-        cmd = f'ipython {file} > {file}.log 2>&1 &'
+        cmd = f'ipython --cache-size=0 {file} > {file}.log 2>&1 &'
         if not self.no_exec:
             subprocess.run(cmd, shell=True)
         nb_start_time = time.time() * 1000
@@ -346,7 +346,7 @@ class Runj:
         except KeyboardInterrupt:
             # Handle Ctrl-C gracefully
             print('\nShutting down server')
-            cmd = f"kill -9 $(ps aux | grep 'ipython {file}' | grep -v grep | awk \'{{print $2}}\')"
+            cmd = f"kill -9 $(ps aux | grep 'ipython --cache-size=0 {file}' | grep -v grep | awk \'{{print $2}}\')"
             subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
             httpd.shutdown()
 
